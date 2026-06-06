@@ -11,13 +11,13 @@
   "lang": "es",
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/pruebasist/SEM/main/icon-192.png",
+      "src": "https://via.placeholder.com/192/07090f/00b4d8?text=SEM",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://raw.githubusercontent.com/pruebasist/SEM/main/icon-512.png",
+      "src": "https://via.placeholder.com/512/07090f/00b4d8?text=SEM",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
