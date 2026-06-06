@@ -207,7 +207,10 @@ textarea.finp{resize:vertical;min-height:70px}
     <div class="logo">SEM</div>
     <div class="sub">SISTEMA DE EMERGENCIAS MÉDICAS</div>
     <div style="width:100%;max-width:340px">
-      <input id="masterPass" type="password" placeholder="Contraseña de acceso al sistema" style="margin-bottom:12px;text-align:center;font-size:16px;letter-spacing:2px" onkeydown="if(event.key==='Enter')verificarMaster()"/>
+      <div style="position:relative;margin-bottom:12px">
+        <input id="masterPass" type="password" placeholder="Contraseña de acceso al sistema" style="text-align:center;font-size:16px;letter-spacing:2px;padding-right:44px;width:100%" onkeydown="if(event.key==='Enter')verificarMaster()"/>
+        <button onclick="togglePass('masterPass',this)" type="button" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#4a6a80;font-size:18px;cursor:pointer;padding:4px">👁</button>
+      </div>
       <div id="masterErr" style="color:#ef233c;font-size:12px;text-align:center;min-height:18px;margin-bottom:8px;font-family:monospace"></div>
       <button class="btn btn-cyan" onclick="verificarMaster()">ACCEDER</button>
     </div>
@@ -232,7 +235,10 @@ textarea.finp{resize:vertical;min-height:70px}
     <div class="form-title" id="fTitle">ACCESO</div>
     <div class="form-hint" id="fHint"></div>
     <input id="fUser" placeholder="Usuario" autocomplete="off" autocapitalize="none" spellcheck="false" style="margin-bottom:10px"/>
-    <input id="fPass" placeholder="Contraseña" type="password" style="margin-bottom:10px"/>
+    <div style="position:relative;margin-bottom:10px">
+      <input id="fPass" placeholder="Contraseña" type="password" style="padding-right:44px"/>
+      <button onclick="togglePass('fPass',this)" type="button" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#4a6a80;font-size:18px;cursor:pointer;padding:4px">👁</button>
+    </div>
     <div class="err" id="fErr"></div>
     <button class="btn btn-cyan" onclick="doLogin()">INGRESAR</button>
     <button class="btn btn-ghost" onclick="irLogin()">← Volver</button>
@@ -709,6 +715,104 @@ textarea.finp{resize:vertical;min-height:70px}
     <div style="display:flex;gap:10px;margin-top:10px">
       <button class="mbtn m-green" id="btnConfCierre" style="margin-bottom:0">✓ CONFIRMAR Y CERRAR AUXILIO</button>
       <button class="mbtn m-dim" onclick="cancelarCierre()" style="margin-bottom:0;width:auto;padding:13px 16px">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONDICIONAL MOVIL -->
+<div class="overlay" id="condicionalBox" style="z-index:660">
+  <div class="ov-box" style="border-color:#f9c74f;max-height:88vh;overflow-y:auto">
+    <div style="font-size:13px;font-weight:700;color:#f9c74f;letter-spacing:2px;margin-bottom:12px;font-family:monospace;text-align:center">⚠️ ESTADO DEL MÓVIL</div>
+    <div id="condMovInfo" style="background:#07090f;border-radius:8px;padding:10px;margin-bottom:14px;font-size:13px;color:#fff;font-weight:700"></div>
+    <div class="flabel">ESTADO</div>
+    <div id="condEstadoList" style="margin-bottom:14px"></div>
+    <div id="condMotivoExtra" style="display:none;margin-bottom:12px">
+      <div class="flabel">DETALLE ADICIONAL (opcional)</div>
+      <input class="finp" id="condDetalleInp" placeholder="Agregá más información..."/>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="mbtn" id="btnConfCond" style="background:rgba(249,199,79,0.2);color:#f9c74f;border:2px solid #f9c74f;margin-bottom:0">✓ CONFIRMAR ESTADO</button>
+      <button class="mbtn m-dim" onclick="document.getElementById('condicionalBox').classList.remove('show')" style="margin-bottom:0;width:auto;padding:13px 16px">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FIRMA DIGITAL -->
+<div class="overlay" id="firmaBox" style="z-index:700">
+  <div class="ov-box" style="border-color:#43aa8b;max-height:95vh;overflow-y:auto">
+    <div style="font-size:13px;font-weight:700;color:#43aa8b;letter-spacing:2px;margin-bottom:4px;font-family:monospace;text-align:center">✍️ FIRMA DIGITAL</div>
+    <div id="firmaRol" style="font-size:11px;color:#4a6a80;font-family:monospace;text-align:center;margin-bottom:12px"></div>
+    <div id="firmaIdentidad" style="background:#07090f;border-radius:8px;padding:10px;margin-bottom:12px">
+      <div class="flabel">NOMBRE COMPLETO</div>
+      <input class="finp" id="firmaNombre" placeholder="Nombre del firmante" style="margin-bottom:8px"/>
+      <div class="flabel">MATRÍCULA / LEGAJO</div>
+      <input class="finp" id="firmaMatricula" placeholder="Nº de matrícula o legajo"/>
+    </div>
+    <div class="flabel">FIRMA (dibujá en el recuadro)</div>
+    <div style="background:#fff;border-radius:8px;border:2px solid #43aa8b;margin-bottom:8px;overflow:hidden">
+      <canvas id="firmaCanvas" width="340" height="160" style="width:100%;height:160px;touch-action:none;display:block"></canvas>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button onclick="limpiarFirma()" style="flex:1;background:transparent;border:1px solid #1e2d40;color:#4a6a80;padding:8px;border-radius:6px;cursor:pointer;font-family:Arial;font-size:13px">🗑 Limpiar</button>
+    </div>
+    <div id="firmaPinBox" style="margin-bottom:12px">
+      <div class="flabel">PIN PERSONAL (4 dígitos)</div>
+      <input class="finp" id="firmaPin" type="password" maxlength="4" placeholder="••••" style="text-align:center;font-size:24px;letter-spacing:8px"/>
+      <div style="font-size:10px;color:#4a6a80;font-family:monospace;margin-top:4px">Tu PIN es personal e intransferible. No se puede modificar la firma una vez guardada.</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="mbtn m-green" id="btnConfFirma" style="margin-bottom:0">✓ FIRMAR</button>
+      <button class="mbtn m-dim" onclick="cancelarFirma()" style="margin-bottom:0;width:auto;padding:13px 16px">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CIERRE ESPECIAL (Paciente ausente / Rechaza) -->
+<div class="overlay" id="cierreEspecialBox" style="z-index:680">
+  <div class="ov-box" style="border-color:#ef233c;max-height:95vh;overflow-y:auto">
+    <div style="font-size:13px;font-weight:700;color:#ef233c;letter-spacing:2px;margin-bottom:12px;font-family:monospace;text-align:center" id="cierrEspTitulo">CIERRE ESPECIAL</div>
+
+    <!-- Tipo de cierre especial -->
+    <div id="cierrEspTipos" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <button onclick="selCierreEsp('ausente')" style="background:rgba(249,199,79,0.1);border:2px solid #f9c74f;border-radius:10px;padding:14px;color:#f9c74f;font-weight:700;font-size:15px;cursor:pointer;font-family:Arial;text-align:left">🚪 Paciente ausente — no encontrado</button>
+      <button onclick="selCierreEsp('rechaza_atencion')" style="background:rgba(239,35,60,0.1);border:2px solid #ef233c;border-radius:10px;padding:14px;color:#ef233c;font-weight:700;font-size:15px;cursor:pointer;font-family:Arial;text-align:left">✋ Paciente rechaza atención médica</button>
+      <button onclick="selCierreEsp('rechaza_derivacion')" style="background:rgba(156,77,214,0.1);border:2px solid #9c4dd6;border-radius:10px;padding:14px;color:#9c4dd6;font-weight:700;font-size:15px;cursor:pointer;font-family:Arial;text-align:left">🏥 Paciente rechaza derivación indicada</button>
+    </div>
+
+    <!-- Contenido según tipo -->
+    <div id="cierrEspContenido" style="display:none">
+      <!-- Foto domicilio (para ausente) -->
+      <div id="fotoBox" style="display:none;margin-bottom:14px">
+        <div class="flabel">FOTO DEL DOMICILIO (constancia)</div>
+        <div style="background:#07090f;border:2px dashed #f9c74f;border-radius:10px;padding:16px;text-align:center;margin-bottom:8px">
+          <input type="file" id="fotoDomicilio" accept="image/*" capture="environment" style="display:none" onchange="previewFoto(this)"/>
+          <button onclick="document.getElementById('fotoDomicilio').click()" style="background:rgba(249,199,79,0.15);border:1px solid #f9c74f;color:#f9c74f;padding:12px 20px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;font-family:Arial">📷 SACAR FOTO</button>
+          <div id="fotoPreview" style="margin-top:10px"></div>
+        </div>
+        <div class="flabel">OBSERVACIONES</div>
+        <textarea class="finp" id="obsAusente" placeholder="Describí la situación encontrada..." style="min-height:60px"></textarea>
+      </div>
+
+      <!-- Texto legal y firma paciente (para rechazos) -->
+      <div id="firmaRechBox" style="display:none;margin-bottom:14px">
+        <div id="textoLegal" style="background:#07090f;border:1px solid #ef233c;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;color:#c9d6df;line-height:1.7;font-family:monospace"></div>
+        <div class="flabel">NOMBRE DEL PACIENTE</div>
+        <input class="finp" id="rechNombre" placeholder="Nombre completo del paciente" style="margin-bottom:8px"/>
+        <div class="flabel">DNI DEL PACIENTE</div>
+        <input class="finp" id="rechDni" placeholder="Número de DNI" style="margin-bottom:10px"/>
+        <div class="flabel">FIRMA DEL PACIENTE (dibujá en el recuadro)</div>
+        <div style="background:#fff;border-radius:8px;border:2px solid #ef233c;margin-bottom:8px;overflow:hidden">
+          <canvas id="firmaRechCanvas" width="340" height="140" style="width:100%;height:140px;touch-action:none;display:block"></canvas>
+        </div>
+        <button onclick="limpiarFirmaRech()" style="background:transparent;border:1px solid #1e2d40;color:#4a6a80;padding:7px 14px;border-radius:6px;cursor:pointer;font-family:Arial;font-size:12px;margin-bottom:12px">🗑 Limpiar firma</button>
+        <div class="flabel">OBSERVACIONES DEL MÉDICO</div>
+        <textarea class="finp" id="obsRechazo" placeholder="Notas del médico sobre el rechazo..." style="min-height:60px"></textarea>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button class="mbtn m-red" id="btnConfCierreEsp" style="margin-bottom:0">✓ CONFIRMAR Y CERRAR</button>
+        <button class="mbtn m-dim" onclick="document.getElementById('cierreEspecialBox').classList.remove('show')" style="margin-bottom:0;width:auto;padding:13px 16px">✕</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1247,35 +1351,6 @@ function buscarDir(val){
 }
 
 // HOSPITAL SEARCH
-function buscarHospital(val,fbKey){
-  var sugg=document.getElementById('hospSugg_'+fbKey); if(!sugg) return;
-  if(val.length<3){sugg.style.display='none';return;}
-  clearTimeout(hospTimers[fbKey]);
-  hospTimers[fbKey]=setTimeout(async function(){
-    try{
-      var r=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(val+' hospital clínica sanatorio Argentina')+'&limit=6&addressdetails=1&accept-language=es');
-      var data=await r.json();
-      if(!data.length){sugg.style.display='none';return;}
-      sugg.innerHTML='';
-      data.forEach(function(d){
-        var name=d.name||d.display_name.split(',')[0];
-        var addr=(d.address.road||'')+(d.address.house_number?' '+d.address.house_number:'');
-        var city=d.address.city||d.address.town||d.address.village||'';
-        var label=name+(addr?', '+addr:'')+(city?', '+city:'');
-        var item=document.createElement('div');item.className='sugg-item';item.textContent=label;
-        item.onclick=function(){
-          document.getElementById('destInp_'+fbKey).value=name;
-          hospData[fbKey]={name:name,dir:addr+(city?', '+city:''),lat:parseFloat(d.lat),lng:parseFloat(d.lon)};
-          var prev=document.getElementById('hospPreview_'+fbKey);
-          if(prev) prev.textContent='📍 '+label;
-          sugg.style.display='none';
-        };
-        sugg.appendChild(item);
-      });
-      sugg.style.display='block';
-    }catch(e){}
-  },400);
-}
 
 document.addEventListener('click',function(e){
   var b=document.getElementById('dirSugg');
@@ -1578,15 +1653,17 @@ function renderMov(){
   var el=document.getElementById('movList'); if(!el) return;
   el.innerHTML='';
   movArr().forEach(function(u){
-    var c=u.noDisponible?'#555':colorEst(u.est);
+    var cond=u.estadoCond&&u.estadoCond!=='operativo';
+    var c=cond?'#ef233c':colorEst(u.est);
     var div=document.createElement('div');
     div.className='mov-card';div.style.border='1px solid '+c;
-    if(u.noDisponible) div.style.opacity='0.5';
+    if(cond) div.style.opacity='0.75';
     div.innerHTML='<div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px">'+(u.n||'Móvil')+(u.num?' <span style="font-size:9px;color:#4a6a80">'+u.num+'</span>':'')+'</div>'
-      +'<div style="font-size:9px;color:'+c+';font-family:monospace;font-weight:700;margin-bottom:3px">'+estLabel(u.est,u.regresandoDe)+'</div>'
+      +(cond?'<div style="font-size:10px;color:#ef233c;font-family:monospace;font-weight:700;margin-bottom:3px">⛔ '+(u.estadoCondo||'No operativo')+'</div>':'<div style="font-size:9px;color:'+c+';font-family:monospace;font-weight:700;margin-bottom:3px">'+estLabel(u.est,u.regresandoDe)+'</div>')
       +(u.medico?'<div style="font-size:9px;color:#4a6a80;font-family:monospace">👨‍⚕️ '+u.medico+'</div>':'')
       +(u.enfermero?'<div style="font-size:9px;color:#4a6a80;font-family:monospace">👩‍⚕️ '+u.enfermero+'</div>':'')
-      +(u.tel?'<div style="font-size:9px;color:#4a6a80;font-family:monospace">📞 '+u.tel+'</div>':'');
+      +(u.tel?'<div style="font-size:9px;color:#4a6a80;font-family:monospace">📞 '+u.tel+'</div>':'')
+      +'<button onclick="abrirCondicional('+u.id+')" style="width:100%;background:rgba(249,199,79,0.1);border:1px solid #f9c74f;color:#f9c74f;font-size:10px;padding:5px;border-radius:5px;cursor:pointer;font-family:Arial;margin-top:5px;font-weight:700">⚙ ESTADO</button>';
     el.appendChild(div);
   });
 }
@@ -1758,6 +1835,9 @@ function checkAuxMovil(){
 }
 function mostrarAlertaMovil(fbKey,a){
   alertaAuxId=fbKey;
+  // ALERTA SONORA
+  iniciarAleraSonora();
+  if(navigator.vibrate){var vibInt=setInterval(function(){navigator.vibrate([500,200,500,200,500]);},2000);setTimeout(function(){clearInterval(vibInt);},30000);}
   var uData=moviles&&moviles[me.mid]?moviles[me.mid]:null;
   document.getElementById('alContent').innerHTML=
     (uData?'<div style="background:rgba(0,180,216,0.08);border:1px solid rgba(0,180,216,0.3);border-radius:8px;padding:8px;margin-bottom:8px"><div style="font-size:9px;color:#00b4d8;letter-spacing:2px;font-family:monospace">TRIPULACIÓN</div><div style="font-size:13px;color:#fff">🚑 '+uData.n+(uData.num?' · '+uData.num:'')+'</div><div style="font-size:11px;color:#4a6a80;font-family:monospace">'+(uData.medico?'👨‍⚕️ '+uData.medico+' ':' ')+(uData.enfermero?'👩‍⚕️ '+uData.enfermero:'')+'</div></div>':'')
@@ -1779,6 +1859,7 @@ function mostrarAlertaMovil(fbKey,a){
 function toggleRechazo(){var el=document.getElementById('rechOpts');el.style.display=el.style.display==='none'?'block':'none';}
 async function aceptarAux(){
   if(!alertaAuxId) return;
+  detenerAlertaSonora();
   var fbKey=alertaAuxId;var a=auxilios[fbKey];
   if(db){
     await db.ref('auxilios/'+fbKey).update({est:'activo',tsAcept:Date.now()});
@@ -1791,6 +1872,7 @@ async function aceptarAux(){
 }
 async function rechazarAux(motivo){
   if(!alertaAuxId) return;
+  detenerAlertaSonora();
   var fbKey=alertaAuxId;var a=auxilios[fbKey];
   if(a&&a.movilId&&db) await db.ref('moviles/'+a.movilId).update({est:'libre'});
   if(db) await db.ref('auxilios/'+fbKey).update({est:'pendiente',movilId:null,movilN:null,movilNotif:false,rechazo:motivo,despachador:null});
@@ -1799,145 +1881,6 @@ async function rechazarAux(motivo){
   document.getElementById('alertaBox').classList.remove('show');alertaAuxId=null;
 }
 
-// MOVIL SCREEN
-function renderMiAux(){
-  if(!me||rolActual!=='movil') return;
-  var a=auxArr().find(function(x){return ['asignado','activo','llegada','derivando'].indexOf(x.est)>=0&&x.movilId===me.mid;});
-  var el=document.getElementById('miAuxContent');
-  if(!a){el.innerHTML='<div class="empty">Sin auxilio asignado.<br>Esperá la asignación del despacho.</div>';return;}
-
-  var pc=priColor(a.pri);
-  var loc=(a.loc||'')+(a.prov?', '+a.prov:'');
-
-  // Google Maps URL — usa coordenadas si están, si no la dirección como texto
-  var gmDir=encodeURIComponent(a.dir+(loc?', '+loc:''));
-  var gmUrl=a.lat&&a.lng
-    ?'https://www.google.com/maps/dir/?api=1&destination='+a.lat+','+a.lng+'&travelmode=driving'
-    :'https://www.google.com/maps/dir/?api=1&destination='+gmDir+'&travelmode=driving';
-
-  // Timeline de tiempos
-  var tlMov='<div style="display:flex;gap:3px;margin-bottom:14px">';
-  [{ic:'📞',lbl:'LLAMADA',ts:a.ts},{ic:'🚑',lbl:'DESPACHO',ts:a.tsAsig},{ic:'▶',lbl:'SALIDA',ts:a.tsAcept},{ic:'📍',lbl:'ARRIBO',ts:a.tsLlegada},{ic:'✓',lbl:'CIERRE',ts:a.tsFin}].forEach(function(s){
-    var done=!!s.ts;
-    tlMov+='<div style="flex:1;text-align:center;background:'+(done?'rgba(67,170,139,0.15)':'rgba(30,45,64,0.4)')+';border-radius:6px;padding:6px 2px;border:1px solid '+(done?'#43aa8b':'#1e2d40')+'">'
-      +'<div style="font-size:16px">'+s.ic+'</div>'
-      +'<div style="font-size:7px;color:'+(done?'#43aa8b':'#4a6a80')+';font-family:monospace;letter-spacing:0.5px;margin-top:2px">'+s.lbl+'</div>'
-      +'<div style="font-size:10px;color:#43aa8b;font-family:monospace;font-weight:700;margin-top:1px">'+(done?fmtHM(s.ts):'')+'</div>'
-      +'</div>';
-  });
-  tlMov+='</div>';
-
-  // Derivación
-  var derHtml='';
-  if(a.est==='llegada'||a.est==='derivando'){
-    if(!a.derivacion){
-      derHtml='<button class="mbtn m-blue" id="btnSolDer">🏥 SOLICITAR DERIVACIÓN</button>';
-    } else if(a.derivacion==='solicitada'){
-      derHtml='<div style="background:rgba(239,35,60,0.1);border:1px solid #ef233c;border-radius:10px;padding:12px;margin-bottom:10px;text-align:center"><div style="font-size:14px;font-weight:700;color:#ef233c">🔴 DERIVACIÓN SOLICITADA</div><div style="font-size:11px;color:#4a6a80;font-family:monospace;margin-top:4px">Esperando respuesta del despacho...</div></div>';
-    } else if(a.derivacion==='buscando'){
-      derHtml='<div style="background:rgba(249,199,79,0.1);border:1px solid #f9c74f;border-radius:10px;padding:12px;margin-bottom:10px;text-align:center"><div style="font-size:14px;font-weight:700;color:#f9c74f">🟡 BUSCANDO DESTINO</div><div style="font-size:11px;color:#4a6a80;font-family:monospace;margin-top:4px">El despacho está buscando destino...</div></div>';
-    } else if(a.derivacion==='confirmada'){
-      var destGmUrl='https://www.google.com/maps/dir/?api=1&destination='+(a.destinoLat&&a.destinoLng?a.destinoLat+','+a.destinoLng:encodeURIComponent(a.destino||''))+'&travelmode=driving';
-      if(!a.derivacionLeida){
-        derHtml='<div style="background:rgba(67,170,139,0.1);border:2px solid #43aa8b;border-radius:10px;padding:14px;margin-bottom:10px">'
-          +'<div style="font-size:11px;color:#43aa8b;font-family:monospace;margin-bottom:6px">🟢 DESTINO CONFIRMADO</div>'
-          +'<div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:4px">'+(a.destino||'—')+'</div>'
-          +(a.destinoDir?'<div style="font-size:13px;color:#c9d6df;margin-bottom:8px">📍 '+a.destinoDir+'</div>':'')
-          +(a.destinoMin?'<div style="font-size:13px;color:#f9c74f;font-family:monospace;font-weight:700;margin-bottom:10px">⏱ '+a.destinoMin+' min · '+a.destinoKm+' km</div>':'')
-          +'<a href="'+destGmUrl+'" target="_blank" style="display:block;background:#43aa8b;color:#000;text-align:center;padding:12px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:8px">🗺️ ABRIR EN GOOGLE MAPS</a>'
-          +'<button class="mbtn m-green" id="btnLeidoDer" style="margin-bottom:0">✓ CONFIRMAR Y SALIR AL DESTINO</button>'
-          +'</div>';
-      } else {
-        derHtml='<div style="background:rgba(67,170,139,0.1);border:2px solid #43aa8b;border-radius:10px;padding:14px;margin-bottom:10px">'
-          +'<div style="font-size:11px;color:#43aa8b;font-family:monospace;margin-bottom:6px">🟢 EN CAMINO AL DESTINO</div>'
-          +'<div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:4px">'+(a.destino||'—')+'</div>'
-          +(a.destinoDir?'<div style="font-size:13px;color:#c9d6df;margin-bottom:8px">📍 '+a.destinoDir+'</div>':'')
-          +(a.destinoMin?'<div style="font-size:13px;color:#f9c74f;font-family:monospace;font-weight:700;margin-bottom:10px">⏱ '+a.destinoMin+' min · '+a.destinoKm+' km</div>':'')
-          +'<a href="'+destGmUrl+'" target="_blank" style="display:block;background:#0077b6;color:#fff;text-align:center;padding:12px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:8px">🗺️ ABRIR EN GOOGLE MAPS</a>'
-          +'<button class="mbtn m-green" id="btnFinalizarDer" style="margin-bottom:0">✓ LLEGUÉ AL HOSPITAL — FINALIZAR</button>'
-          +'</div>';
-      }
-    }
-  }
-
-  // Botón de estado
-  var statusBtn='';
-  if(a.est==='asignado'){
-    statusBtn='<div style="background:rgba(249,199,79,0.08);border:1px solid rgba(249,199,79,0.3);border-radius:10px;padding:14px;text-align:center;margin-bottom:10px"><div style="font-size:22px;margin-bottom:4px">⏳</div><div style="font-size:13px;color:#f9c74f;font-family:monospace">Esperando confirmación...</div></div>';
-  } else if(a.est==='activo'){
-    statusBtn='<button class="mbtn m-blue" id="btnLlegada" style="font-size:17px;padding:16px">📍 LLEGUÉ AL DOMICILIO</button>';
-  } else if(a.est==='llegada'||a.est==='derivando'){
-    statusBtn=derHtml+'<button class="mbtn" id="btnFinalizar" style="background:rgba(239,35,60,0.15);color:#ef233c;border:2px solid #ef233c;font-size:16px;padding:15px;margin-top:6px">✓ FINALIZAR / COMPLETAR IPH</button>';
-  }
-
-  el.innerHTML=
-    // PRIORIDAD BADGE
-    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
-    +'<div style="background:'+pc+';color:#000;font-weight:900;font-size:13px;padding:6px 14px;border-radius:20px;letter-spacing:2px">'+(a.pri||'').toUpperCase()+'</div>'
-    +'<div style="font-size:11px;color:#4a6a80;font-family:monospace">AUXILIO #'+a.num+'</div>'
-    +(a.esHijo?'<div style="font-size:10px;color:#00b4d8;font-family:monospace;border:1px solid #00b4d8;padding:2px 7px;border-radius:4px">🔗 VINCULADO</div>':'')
-    +'</div>'
-
-    // TIMELINE
-    +tlMov
-
-    // ── PACIENTE ──
-    +'<div style="background:#0d1117;border-radius:12px;padding:14px;margin-bottom:10px;border-left:4px solid '+pc+'">'
-    +'<div style="font-size:10px;color:#4a6a80;letter-spacing:2px;font-family:monospace;margin-bottom:6px">PACIENTE</div>'
-    +'<div style="font-size:24px;font-weight:900;color:#fff;margin-bottom:4px">'+a.nom+' '+a.ape+'</div>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">'
-    +'<div style="background:#07090f;border-radius:6px;padding:5px 10px;font-size:13px;color:#c9d6df"><span style="color:#4a6a80;font-size:10px;font-family:monospace">EDAD </span>'+(a.eda||'—')+'</div>'
-    +'<div style="background:#07090f;border-radius:6px;padding:5px 10px;font-size:13px;color:#c9d6df"><span style="color:#4a6a80;font-size:10px;font-family:monospace">SEXO </span>'+(a.sexo||'—')+'</div>'
-    +'<div style="background:#07090f;border-radius:6px;padding:5px 10px;font-size:13px;color:#c9d6df"><span style="color:#4a6a80;font-size:10px;font-family:monospace">DNI </span>'+(a.dni||'—')+'</div>'
-    +'</div>'
-    // Tel clickeable
-    +(a.tel?'<a href="tel:'+a.tel+'" style="display:flex;align-items:center;gap:8px;background:rgba(0,180,216,0.1);border:1px solid #00b4d8;border-radius:8px;padding:10px 12px;margin-bottom:8px;text-decoration:none"><span style="font-size:20px">📞</span><div><div style="font-size:10px;color:#4a6a80;font-family:monospace;letter-spacing:1px">'+(a.nomLlam?a.nomLlam+(a.relacion?' · '+a.relacion:''):'TELÉFONO CONTACTO')+'</div><div style="font-size:20px;font-weight:700;color:#00b4d8">'+a.tel+'</div></div></a>':'')
-    // Obra social
-    +'<div style="font-size:13px;color:#4a6a80;font-family:monospace">🏥 '+(a.obr||'Sin cobertura')+(a.coseguro?' &nbsp;·&nbsp; <span style="color:#f9c74f;font-weight:700">Coseguro: $'+a.montoCoseguro+'</span>':'')+'</div>'
-    +'</div>'
-
-    // ── SÍNTOMAS ──
-    +'<div style="background:#0d1117;border-radius:12px;padding:14px;margin-bottom:10px;border-left:4px solid #ef233c">'
-    +'<div style="font-size:10px;color:#ef233c;letter-spacing:2px;font-family:monospace;margin-bottom:8px">🩺 MOTIVO / SÍNTOMAS</div>'
-    +'<div style="font-size:17px;color:#fff;line-height:1.5;font-weight:600">'+a.sin+'</div>'
-    +'</div>'
-
-    // ── UBICACIÓN clickeable ──
-    +'<a href="'+gmUrl+'" target="_blank" style="display:block;background:#0d1117;border-radius:12px;padding:14px;margin-bottom:10px;border-left:4px solid #43aa8b;text-decoration:none">'
-    +'<div style="font-size:10px;color:#43aa8b;letter-spacing:2px;font-family:monospace;margin-bottom:6px">📍 UBICACIÓN — tocar para navegar</div>'
-    +'<div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:4px">'+a.dir+'</div>'
-    +(a.entre1||a.entre2?'<div style="font-size:13px;color:#c9d6df;margin-bottom:2px">Entre '+a.entre1+(a.entre2?' y '+a.entre2:'')+'</div>':'')
-    +(a.pisoDepto?'<div style="font-size:13px;color:#c9d6df;margin-bottom:2px">'+a.pisoDepto+'</div>':'')
-    +(loc?'<div style="font-size:13px;color:#4a6a80;font-family:monospace;margin-bottom:6px">'+loc+'</div>':'')
-    +'<div style="background:#43aa8b;color:#000;text-align:center;padding:10px;border-radius:8px;font-weight:700;font-size:14px;margin-top:6px">🗺️ ABRIR EN GOOGLE MAPS</div>'
-    +'</a>'
-
-    // MINI MAPA LEAFLET
-    +'<div id="mapMovilEl" style="height:200px;border-radius:10px;border:1px solid #1e2d40;margin-bottom:12px;overflow:hidden"></div>'
-
-    // ── INFO DESPACHO ──
-    +'<div style="font-size:11px;color:#4a6a80;font-family:monospace;text-align:center;margin-bottom:12px">⏱ '+(a.min||'—')+' min · '+(a.km||'—')+' km'+(a.despachador?' &nbsp;·&nbsp; Desp: '+a.despachador:'')+'</div>'
-
-    +statusBtn;
-
-  setTimeout(function(){
-    var fbKey=a.fbKey,movilId=a.movilId,loc2=a.loc||'base';
-    var btnL=document.getElementById('btnLlegada');if(btnL) btnL.onclick=function(){marcarLlegada(fbKey);};
-    var btnF=document.getElementById('btnFinalizar');if(btnF) btnF.onclick=function(){abrirCierre(fbKey,movilId,loc2,a);};
-    var btnSD=document.getElementById('btnSolDer');if(btnSD) btnSD.onclick=function(){solicitarDerivacion(fbKey);};
-    var btnLD=document.getElementById('btnLeidoDer');if(btnLD) btnLD.onclick=function(){confirmarLecturaYSalir(fbKey,a);};
-    var btnFD=document.getElementById('btnFinalizarDer');if(btnFD) btnFD.onclick=function(){abrirCierre(fbKey,movilId,loc2,a);};
-    initMapMovil(a);
-  },100);
-}
-
-async function marcarLlegada(fbKey){
-  if(!db) return;
-  await db.ref('auxilios/'+fbKey).update({est:'llegada',tsLlegada:Date.now()});
-  var a=auxilios[fbKey];if(a&&a.movilId) await db.ref('moviles/'+a.movilId).update({est:'arribo'});
-  // BITÁCORA: hora de arribo
-  addBit(fbKey,'📍 ARRIBO — Móvil llegó al incidente · '+fmtDateTime(Date.now()),'arribo');
-}
 async function solicitarDerivacion(fbKey){
   if(!db) return;
   await db.ref('auxilios/'+fbKey).update({derivacion:'solicitada',est:'derivando',tsDerSol:Date.now()});
@@ -2645,67 +2588,6 @@ async function finalizarProgramado(fbKey){
   addBit(fbKey,'✓ VISITA FINALIZADA por '+me.n+' · '+fmtDateTime(Date.now()),'fin');
 }
 
-function renderProgList(){
-  if(!me||rolActual!=='movil') return;
-  var prog=auxArr().filter(function(a){return a.est==='programado'&&a.movilId===me.mid;})
-    .sort(function(a,b){return (a.ordenProgram||99)-(b.ordenProgram||99);});
-  var el=document.getElementById('progList'); if(!el) return;
-  var badge=document.getElementById('bdProg');
-  if(badge){badge.style.display=prog.length>0?'block':'none';badge.textContent=prog.length;}
-  if(!prog.length){el.innerHTML='<div class="empty">Sin auxilios programados.</div>';return;}
-  el.innerHTML='<div style="font-size:10px;color:#9c4dd6;letter-spacing:2px;font-family:monospace;margin-bottom:12px;padding-top:4px">📅 '+prog.length+' AUXILIO(S) PROGRAMADO(S)</div>';
-  prog.forEach(function(a){
-    var pc=priColor(a.pri);
-    var gmUrl=a.lat&&a.lng
-      ?'https://www.google.com/maps/dir/?api=1&destination='+a.lat+','+a.lng+'&travelmode=driving'
-      :'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(a.dir+(a.loc?', '+a.loc:''))+'&travelmode=driving';
-    var div=document.createElement('div');
-    div.style.cssText='background:#0d1117;border:2px solid #9c4dd6;border-radius:12px;padding:14px;margin-bottom:16px';
-    div.innerHTML=
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'
-      +'<div style="background:#9c4dd6;color:#fff;font-weight:900;font-size:15px;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+a.ordenProgram+'</div>'
-      +'<div style="background:'+pc+';color:#000;font-weight:700;font-size:11px;padding:3px 10px;border-radius:12px;letter-spacing:1px">'+(a.pri||'').toUpperCase()+'</div>'
-      +(a.horaProgram?'<div style="font-size:13px;color:#9c4dd6;font-family:monospace;font-weight:700">🕐 '+a.horaProgram+'</div>':'')
-      +'<div style="font-size:10px;color:#4a6a80;font-family:monospace;margin-left:auto">#'+a.num+'</div>'
-      +'</div>'
-      // Paciente
-      +'<div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:5px">'+a.nom+' '+a.ape+'</div>'
-      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'
-      +(a.eda?'<div style="background:#07090f;border-radius:5px;padding:4px 9px;font-size:12px;color:#c9d6df"><span style="color:#4a6a80;font-size:9px">EDAD </span>'+a.eda+'</div>':'')
-      +(a.sexo?'<div style="background:#07090f;border-radius:5px;padding:4px 9px;font-size:12px;color:#c9d6df"><span style="color:#4a6a80;font-size:9px">SEXO </span>'+a.sexo+'</div>':'')
-      +(a.dni?'<div style="background:#07090f;border-radius:5px;padding:4px 9px;font-size:12px;color:#c9d6df"><span style="color:#4a6a80;font-size:9px">DNI </span>'+a.dni+'</div>':'')
-      +'</div>'
-      // Tel
-      +(a.tel?'<a href="tel:'+a.tel+'" style="display:flex;align-items:center;gap:10px;background:rgba(0,180,216,0.1);border:1px solid #00b4d8;border-radius:8px;padding:10px 13px;margin-bottom:10px;text-decoration:none"><span style="font-size:20px">📞</span><div><div style="font-size:9px;color:#4a6a80;font-family:monospace;letter-spacing:1px">TELÉFONO</div><div style="font-size:20px;font-weight:700;color:#00b4d8">'+a.tel+'</div></div></a>':'')
-      // Obra social
-      +(a.obr?'<div style="font-size:12px;color:#4a6a80;font-family:monospace;margin-bottom:10px">🏥 '+a.obr+(a.coseguro?' · <span style="color:#f9c74f;font-weight:700">Coseg: $'+a.montoCoseguro+'</span>':'')+'</div>':'')
-      // Motivo
-      +'<div style="background:#07090f;border-left:3px solid #ef233c;border-radius:6px;padding:10px;margin-bottom:10px">'
-      +'<div style="font-size:9px;color:#ef233c;letter-spacing:2px;font-family:monospace;margin-bottom:5px">🩺 MOTIVO / SÍNTOMAS</div>'
-      +'<div style="font-size:16px;color:#fff;line-height:1.5;font-weight:600">'+a.sin+'</div>'
-      +'</div>'
-      // Dirección
-      +'<a href="'+gmUrl+'" target="_blank" style="display:block;background:#07090f;border-left:3px solid #43aa8b;border-radius:6px;padding:10px;margin-bottom:10px;text-decoration:none">'
-      +'<div style="font-size:9px;color:#43aa8b;letter-spacing:2px;font-family:monospace;margin-bottom:5px">📍 DIRECCIÓN — tocar para navegar</div>'
-      +'<div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:3px">'+a.dir+'</div>'
-      +(a.entre1||a.entre2?'<div style="font-size:12px;color:#c9d6df">Entre '+a.entre1+(a.entre2?' y '+a.entre2:'')+'</div>':'')
-      +(a.pisoDepto?'<div style="font-size:12px;color:#c9d6df">'+a.pisoDepto+'</div>':'')
-      +((a.loc||a.prov)?'<div style="font-size:11px;color:#4a6a80;font-family:monospace">'+(a.loc||'')+(a.prov?', '+a.prov:'')+'</div>':'')
-      +'<div style="background:#43aa8b;color:#000;text-align:center;padding:9px;border-radius:6px;font-weight:700;font-size:13px;margin-top:8px">🗺️ ABRIR EN GOOGLE MAPS</div>'
-      +'</a>'
-      // Nota
-      +(a.notaProgram?'<div style="background:rgba(156,77,214,0.1);border:1px solid #9c4dd6;border-radius:6px;padding:8px 10px;margin-bottom:10px;font-size:12px;color:#c9d6df;font-family:monospace">📝 '+a.notaProgram+'</div>':'')
-      // Info despacho
-      +'<div style="font-size:10px;color:#4a6a80;font-family:monospace;margin-bottom:12px">Programado por: '+(a.despachador||'—')+(a.tsProgram?' · '+fmtHM(a.tsProgram):'')+'</div>'
-      // Botones
-      +'<div style="display:flex;gap:8px">'
-      +'<button onclick="iniciarProgramado(\''+a.fbKey+'\')" style="flex:2;background:#43aa8b;color:#000;border:none;font-weight:700;font-size:15px;padding:13px;cursor:pointer;border-radius:8px;font-family:Arial">▶ INICIAR VISITA</button>'
-      +'<button onclick="finalizarProgramado(\''+a.fbKey+'\')" style="flex:1;background:rgba(0,180,216,0.15);color:#00b4d8;border:1px solid #00b4d8;font-weight:700;font-size:13px;padding:13px;cursor:pointer;border-radius:8px;font-family:Arial">✓ FIN</button>'
-      +'<button onclick="cancelarProgramado(\''+a.fbKey+'\')" style="flex:1;background:rgba(156,77,214,0.1);color:#9c4dd6;border:1px solid #9c4dd6;font-weight:700;font-size:13px;padding:13px;cursor:pointer;border-radius:8px;font-family:Arial">✕</button>'
-      +'</div>';
-    el.appendChild(div);
-  });
-}
 
 // Badge programados — integrado en onDataChange principal
 
@@ -2975,6 +2857,619 @@ function aplicarTriage(){
   document.getElementById('triageBox').classList.remove('show');
 }
 
+// ============================================================
+// VER / OCULTAR CONTRASEÑA
+// ============================================================
+function togglePass(id,btn){
+  var el=document.getElementById(id);
+  if(!el) return;
+  if(el.type==='password'){el.type='text';btn.textContent='🙈';}
+  else{el.type='password';btn.textContent='👁';}
+}
+
+// ============================================================
+// ALERTA SONORA PARA MÓVIL
+// ============================================================
+var alertaAudio=null,alertaInterval=null;
+
+function iniciarAleraSonora(){
+  detenerAlertaSonora();
+  try{
+    var ctx=new (window.AudioContext||window.webkitAudioContext)();
+    function beep(){
+      var o=ctx.createOscillator();
+      var g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.frequency.value=880;
+      o.type='sine';
+      g.gain.setValueAtTime(0.8,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);
+      o.start(ctx.currentTime);
+      o.stop(ctx.currentTime+0.4);
+    }
+    beep();setTimeout(beep,500);setTimeout(beep,1000);
+    alertaInterval=setInterval(function(){beep();setTimeout(beep,500);},3000);
+  }catch(e){console.log('Audio no disponible');}
+}
+
+function detenerAlertaSonora(){
+  if(alertaInterval){clearInterval(alertaInterval);alertaInterval=null;}
+}
+
+// Badge programados — integrado en onDataChange principal
+
+// ============================================================
+// ESTADOS DEL MÓVIL CON PRIORIDAD Y MOTIVOS
+// ============================================================
+var ESTADOS_DESPACHO=[
+  {id:'operativo',lbl:'✅ Operativo',color:'#43aa8b',rol:'ambos'},
+  {id:'prob_tecnico',lbl:'🔧 Problema técnico',color:'#f9c74f',rol:'ambos'},
+  {id:'combustible',lbl:'⛽ Cargando combustible',color:'#f9c74f',rol:'ambos'},
+  {id:'guardia_hosp',lbl:'🏥 Tripulación en guardia / subterráneo',color:'#f9c74f',rol:'ambos'},
+  {id:'trip_no_op',lbl:'👥 Tripulación no operativa',color:'#f9c74f',rol:'ambos'},
+  {id:'limpieza',lbl:'🧹 Unidad en limpieza y desinfección',color:'#f9c74f',rol:'ambos'},
+  {id:'comida',lbl:'🍽️ Tiempo de comida',color:'#f9c74f',rol:'ambos'},
+  {id:'fin_guardia',lbl:'⏰ Fin de guardia',color:'#4a6a80',rol:'ambos'},
+  {id:'inicio_guardia',lbl:'⏳ Aguardando comienzo de guardia',color:'#4a6a80',rol:'ambos'},
+  {id:'sin_com',lbl:'📡 Sin comunicación / falla de radio',color:'#ef233c',rol:'ambos'},
+  // Solo supervisor
+  {id:'retirada',lbl:'🚑 Unidad retirada de servicio',color:'#ef233c',rol:'supervisor'},
+  {id:'inspeccion',lbl:'🔍 Unidad en inspección técnica',color:'#ef233c',rol:'supervisor'},
+  {id:'taller',lbl:'🏗️ Unidad en taller',color:'#ef233c',rol:'supervisor'},
+  {id:'cambio_trip',lbl:'🔄 Cambio de tripulación en curso',color:'#9c4dd6',rol:'supervisor'},
+  {id:'auditoria',lbl:'📋 Auditoría operativa',color:'#9c4dd6',rol:'supervisor'},
+  {id:'suspension',lbl:'🛑 Suspensión preventiva',color:'#ef233c',rol:'supervisor'},
+  {id:'accidente_unidad',lbl:'💥 Unidad involucrada en accidente',color:'#ef233c',rol:'supervisor'},
+];
+
+var condMovilId=null;
+
+function abrirCondicional(movilId){
+  condMovilId=movilId;
+  var u=moviles[movilId]; if(!u) return;
+  document.getElementById('condMovInfo').textContent=(u.n||'Móvil')+' · '+(u.num||'');
+  var list=document.getElementById('condEstadoList'); list.innerHTML='';
+  var esSup=rolActual==='supervisor';
+  ESTADOS_DESPACHO.forEach(function(e){
+    if(e.rol==='supervisor'&&!esSup) return;
+    var btn=document.createElement('button');
+    var active=u.estadoCond===e.id;
+    btn.style.cssText='width:100%;background:'+(active?e.color+'22':'transparent')+';border:1px solid '+(active?e.color:'#1e2d40')+';border-radius:8px;padding:11px 12px;text-align:left;cursor:pointer;font-family:Arial;font-size:14px;color:'+(active?e.color:'#c9d6df')+';margin-bottom:6px;font-weight:'+(active?'700':'400');
+    btn.textContent=e.lbl+(active?' ✓':'');
+    btn.onclick=function(){
+      list.querySelectorAll('button').forEach(function(b){b.style.borderColor='#1e2d40';b.style.background='transparent';b.style.color='#c9d6df';b.style.fontWeight='400';});
+      btn.style.borderColor=e.color;btn.style.background=e.color+'22';btn.style.color=e.color;btn.style.fontWeight='700';
+      condMovilId&&(moviles[condMovilId]._pendingEstado=e.id);
+      var ex=document.getElementById('condMotivoExtra');
+      ex.style.display=e.id!=='operativo'?'block':'none';
+    };
+    list.appendChild(btn);
+  });
+  document.getElementById('btnConfCond').onclick=confirmarCondicional;
+  document.getElementById('condicionalBox').classList.add('show');
+}
+
+async function confirmarCondicional(){
+  if(!condMovilId||!db) return;
+  var u=moviles[condMovilId]; if(!u) return;
+  var estado=u._pendingEstado||'operativo';
+  var detalle=document.getElementById('condDetalleInp').value.trim();
+  var estad=ESTADOS_DESPACHO.find(function(e){return e.id===estado;});
+  var esOp=estado==='operativo';
+  await db.ref('moviles/'+condMovilId).update({
+    estadoCond:estado,
+    estadoCondo:estad?estad.lbl:'Operativo',
+    condDetalle:detalle||null,
+    noDisponible:!esOp,
+    est:esOp?'libre':'ocupado',
+    tsCondicional:esOp?null:Date.now()
+  });
+  document.getElementById('condicionalBox').classList.remove('show');
+  condMovilId=null;
+}
+
+// ============================================================
+// PRIORIDAD AUTOMÁTICA EN COLA PROGRAMADA
+// ============================================================
+var priOrden={rojo:0,amarillo:1,verde:2};
+
+function ordenarProgramados(lista){
+  return lista.slice().sort(function(a,b){
+    var pa=priOrden[a.pri]||2,pb=priOrden[b.pri]||2;
+    if(pa!==pb) return pa-pb;
+    return (a.tsProgram||0)-(b.tsProgram||0);
+  });
+}
+
+// Override renderProgList para usar orden por prioridad
+var _renderProgOrig=renderProgList;
+function renderProgList(){
+  if(!me||rolActual!=='movil') return;
+  var prog=auxArr().filter(function(a){return a.est==='programado'&&a.movilId===me.mid;});
+  prog=ordenarProgramados(prog);
+  var el=document.getElementById('progList'); if(!el) return;
+  var badge=document.getElementById('bdProg');
+  if(badge){badge.style.display=prog.length>0?'block':'none';badge.textContent=prog.length;}
+  if(!prog.length){el.innerHTML='<div class="empty">Sin auxilios programados.</div>';return;}
+  el.innerHTML='<div style="font-size:10px;color:#9c4dd6;letter-spacing:2px;font-family:monospace;margin-bottom:12px;padding-top:4px">📅 '+prog.length+' AUXILIO(S) PROGRAMADO(S) · Orden por prioridad</div>';
+  prog.forEach(function(a,idx){
+    var pc=priColor(a.pri);
+    var gmUrl=a.lat&&a.lng
+      ?'https://www.google.com/maps/dir/?api=1&destination='+a.lat+','+a.lng+'&travelmode=driving'
+      :'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(a.dir+(a.loc?', '+a.loc:''))+'&travelmode=driving';
+    var div=document.createElement('div');
+    div.style.cssText='background:#0d1117;border:2px solid '+pc+';border-radius:12px;padding:14px;margin-bottom:16px';
+    div.innerHTML=
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'
+      +'<div style="background:'+pc+';color:#000;font-weight:900;font-size:15px;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(idx+1)+'</div>'
+      +'<div style="background:'+pc+';color:#000;font-weight:700;font-size:11px;padding:3px 10px;border-radius:12px;letter-spacing:1px">'+(a.pri||'').toUpperCase()+'</div>'
+      +(a.horaProgram?'<div style="font-size:13px;color:#9c4dd6;font-family:monospace;font-weight:700">🕐 '+a.horaProgram+'</div>':'')
+      +'<div style="font-size:10px;color:#4a6a80;font-family:monospace;margin-left:auto">#'+a.num+'</div>'
+      +'</div>'
+      +'<div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:5px">'+a.nom+' '+a.ape+'</div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'
+      +(a.eda?'<div style="background:#07090f;border-radius:5px;padding:4px 9px;font-size:12px;color:#c9d6df"><span style="color:#4a6a80;font-size:9px">EDAD </span>'+a.eda+'</div>':'')
+      +(a.sexo?'<div style="background:#07090f;border-radius:5px;padding:4px 9px;font-size:12px;color:#c9d6df"><span style="color:#4a6a80;font-size:9px">SEXO </span>'+a.sexo+'</div>':'')
+      +(a.dni?'<div style="background:#07090f;border-radius:5px;padding:4px 9px;font-size:12px;color:#c9d6df"><span style="color:#4a6a80;font-size:9px">DNI </span>'+a.dni+'</div>':'')
+      +'</div>'
+      +(a.tel?'<a href="tel:'+a.tel+'" style="display:flex;align-items:center;gap:10px;background:rgba(0,180,216,0.1);border:1px solid #00b4d8;border-radius:8px;padding:10px 13px;margin-bottom:10px;text-decoration:none"><span style="font-size:20px">📞</span><div><div style="font-size:9px;color:#4a6a80;font-family:monospace;letter-spacing:1px">TELÉFONO</div><div style="font-size:20px;font-weight:700;color:#00b4d8">'+a.tel+'</div></div></a>':'')
+      +(a.obr?'<div style="font-size:12px;color:#4a6a80;font-family:monospace;margin-bottom:10px">🏥 '+a.obr+(a.coseguro?' · <span style="color:#f9c74f;font-weight:700">Coseg: $'+a.montoCoseguro+'</span>':'')+'</div>':'')
+      +'<div style="background:#07090f;border-left:3px solid #ef233c;border-radius:6px;padding:10px;margin-bottom:10px">'
+      +'<div style="font-size:9px;color:#ef233c;letter-spacing:2px;font-family:monospace;margin-bottom:5px">🩺 MOTIVO</div>'
+      +'<div style="font-size:16px;color:#fff;line-height:1.5;font-weight:600">'+a.sin+'</div>'
+      +'</div>'
+      +'<a href="'+gmUrl+'" target="_blank" style="display:block;background:#07090f;border-left:3px solid #43aa8b;border-radius:6px;padding:10px;margin-bottom:10px;text-decoration:none">'
+      +'<div style="font-size:9px;color:#43aa8b;letter-spacing:2px;font-family:monospace;margin-bottom:5px">📍 DIRECCIÓN</div>'
+      +'<div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:3px">'+a.dir+'</div>'
+      +(a.entre1||a.entre2?'<div style="font-size:12px;color:#c9d6df">Entre '+a.entre1+(a.entre2?' y '+a.entre2:'')+'</div>':'')
+      +(a.pisoDepto?'<div style="font-size:12px;color:#c9d6df">'+a.pisoDepto+'</div>':'')
+      +((a.loc||a.prov)?'<div style="font-size:11px;color:#4a6a80;font-family:monospace">'+(a.loc||'')+(a.prov?', '+a.prov:'')+'</div>':'')
+      +'<div style="background:#43aa8b;color:#000;text-align:center;padding:9px;border-radius:6px;font-weight:700;font-size:13px;margin-top:8px">🗺️ ABRIR EN GOOGLE MAPS</div>'
+      +'</a>'
+      +(a.notaProgram?'<div style="background:rgba(156,77,214,0.1);border:1px solid #9c4dd6;border-radius:6px;padding:8px 10px;margin-bottom:10px;font-size:12px;color:#c9d6df;font-family:monospace">📝 '+a.notaProgram+'</div>':'')
+      +'<div style="font-size:10px;color:#4a6a80;font-family:monospace;margin-bottom:12px">Programado por: '+(a.despachador||'—')+(a.tsProgram?' · '+fmtHM(a.tsProgram):'')+'</div>'
+      +'<div style="display:flex;gap:8px">'
+      +'<button onclick="iniciarProgramado(\''+a.fbKey+'\')" style="flex:2;background:#43aa8b;color:#000;border:none;font-weight:700;font-size:15px;padding:13px;cursor:pointer;border-radius:8px;font-family:Arial">▶ INICIAR VISITA</button>'
+      +'<button onclick="finalizarProgramado(\''+a.fbKey+'\')" style="flex:1;background:rgba(0,180,216,0.15);color:#00b4d8;border:1px solid #00b4d8;font-weight:700;font-size:13px;padding:13px;cursor:pointer;border-radius:8px;font-family:Arial">✓ FIN</button>'
+      +'<button onclick="cancelarProgramado(\''+a.fbKey+'\')" style="flex:1;background:rgba(156,77,214,0.1);color:#9c4dd6;border:1px solid #9c4dd6;font-weight:700;font-size:13px;padding:13px;cursor:pointer;border-radius:8px;font-family:Arial">✕</button>'
+      +'</div>';
+    el.appendChild(div);
+  });
+}
+
+// ============================================================
+// FIRMA DIGITAL DEL PERSONAL MÉDICO
+// ============================================================
+var firmaCtx=null,firmaDrawing=false;
+var firmaCallbackFn=null,firmaTipo=null;
+
+function initFirmaCanvas(){
+  var canvas=document.getElementById('firmaCanvas'); if(!canvas) return;
+  firmaCtx=canvas.getContext('2d');
+  firmaCtx.strokeStyle='#000';firmaCtx.lineWidth=2.5;firmaCtx.lineCap='round';
+  function getPos(e){
+    var r=canvas.getBoundingClientRect();
+    var touch=e.touches?e.touches[0]:e;
+    return{x:(touch.clientX-r.left)*(canvas.width/r.width),y:(touch.clientY-r.top)*(canvas.height/r.height)};
+  }
+  canvas.addEventListener('mousedown',function(e){firmaDrawing=true;var p=getPos(e);firmaCtx.beginPath();firmaCtx.moveTo(p.x,p.y);});
+  canvas.addEventListener('mousemove',function(e){if(!firmaDrawing) return;var p=getPos(e);firmaCtx.lineTo(p.x,p.y);firmaCtx.stroke();});
+  canvas.addEventListener('mouseup',function(){firmaDrawing=false;});
+  canvas.addEventListener('touchstart',function(e){e.preventDefault();firmaDrawing=true;var p=getPos(e);firmaCtx.beginPath();firmaCtx.moveTo(p.x,p.y);},{passive:false});
+  canvas.addEventListener('touchmove',function(e){e.preventDefault();if(!firmaDrawing) return;var p=getPos(e);firmaCtx.lineTo(p.x,p.y);firmaCtx.stroke();},{passive:false});
+  canvas.addEventListener('touchend',function(){firmaDrawing=false;});
+}
+
+function limpiarFirma(){var c=document.getElementById('firmaCanvas');if(c&&firmaCtx)firmaCtx.clearRect(0,0,c.width,c.height);}
+
+function abrirFirmaDigital(tipo,callback){
+  firmaTipo=tipo;firmaCallbackFn=callback;
+  var labels={medico:'FIRMA DEL MÉDICO',paramedico:'FIRMA DEL PARAMÉDICO',enfermero:'FIRMA DEL ENFERMERO/A'};
+  document.getElementById('firmaRol').textContent=labels[tipo]||'FIRMA DIGITAL';
+  document.getElementById('firmaNombre').value='';
+  document.getElementById('firmaMatricula').value='';
+  document.getElementById('firmaPin').value='';
+  document.getElementById('firmaBox').classList.add('show');
+  setTimeout(function(){initFirmaCanvas();limpiarFirma();},200);
+  document.getElementById('btnConfFirma').onclick=function(){confirmarFirmaDigital(tipo,callback);};
+}
+
+function cancelarFirma(){document.getElementById('firmaBox').classList.remove('show');firmaTipo=null;firmaCallbackFn=null;}
+
+function confirmarFirmaDigital(tipo,callback){
+  var nombre=document.getElementById('firmaNombre').value.trim();
+  var matricula=document.getElementById('firmaMatricula').value.trim();
+  var pin=document.getElementById('firmaPin').value.trim();
+  if(!nombre){alert('Ingresá el nombre completo.');return;}
+  if(!pin||pin.length<4){alert('El PIN debe tener 4 dígitos.');return;}
+  var canvas=document.getElementById('firmaCanvas');
+  var firmaImg=canvas?canvas.toDataURL('image/png'):'';
+  var firma={
+    tipo:tipo,nombre:nombre,matricula:matricula,
+    firmaImg:firmaImg,ts:Date.now(),
+    pinHash:btoa(pin+'_sem_'+nombre)
+  };
+  document.getElementById('firmaBox').classList.remove('show');
+  if(callback) callback(firma);
+}
+
+// ============================================================
+// CIERRE ESPECIAL — PACIENTE AUSENTE / RECHAZA ATENCIÓN / RECHAZA DERIVACIÓN
+// ============================================================
+var cierreEspFbKey=null,cierreEspMovilId=null,cierreEspTipo=null;
+var firmaRechCtx=null,firmaRechDrawing=false;
+
+function abrirCierreEspecial(fbKey,movilId){
+  cierreEspFbKey=fbKey;cierreEspMovilId=movilId;cierreEspTipo=null;
+  document.getElementById('cierrEspContenido').style.display='none';
+  document.getElementById('cierrEspTipos').style.display='flex';
+  document.getElementById('cierreEspecialBox').classList.add('show');
+}
+
+function selCierreEsp(tipo){
+  cierreEspTipo=tipo;
+  document.getElementById('cierrEspTipos').style.display='none';
+  document.getElementById('cierrEspContenido').style.display='block';
+  var fotoBox=document.getElementById('fotoBox');
+  var firmaBox=document.getElementById('firmaRechBox');
+  var textoLegal=document.getElementById('textoLegal');
+  fotoBox.style.display='none';firmaBox.style.display='none';
+  if(tipo==='ausente'){
+    fotoBox.style.display='block';
+    document.getElementById('cierrEspTitulo').textContent='🚪 PACIENTE AUSENTE';
+  } else if(tipo==='rechaza_atencion'){
+    firmaBox.style.display='block';
+    document.getElementById('cierrEspTitulo').textContent='✋ RECHAZA ATENCIÓN';
+    textoLegal.innerHTML='<b>DECLARACIÓN DE RECHAZO DE ATENCIÓN MÉDICA</b><br><br>El/la paciente declara libre y voluntariamente rechazar la atención médica ofrecida por el personal del Servicio de Emergencias Médicas. Habiendo sido debidamente informado/a de los riesgos que implica dicha decisión, el/la paciente exime al personal médico y paramédico, así como al servicio, de toda responsabilidad derivada de las consecuencias de este rechazo.<br><br>Fecha y hora: '+fmtDateTime(Date.now());
+    setTimeout(function(){initFirmaRech();},200);
+  } else if(tipo==='rechaza_derivacion'){
+    firmaBox.style.display='block';
+    document.getElementById('cierrEspTitulo').textContent='🏥 RECHAZA DERIVACIÓN';
+    textoLegal.innerHTML='<b>DECLARACIÓN DE RECHAZO DE DERIVACIÓN MÉDICA</b><br><br>El/la paciente declara libre y voluntariamente rechazar la derivación indicada por el médico actuante. Habiendo sido informado/a de los riesgos que implica esta decisión, el/la paciente asume plena responsabilidad por las consecuencias de no seguir las indicaciones médicas.<br><br>Fecha y hora: '+fmtDateTime(Date.now());
+    setTimeout(function(){initFirmaRech();},200);
+  }
+  document.getElementById('btnConfCierreEsp').onclick=confirmarCierreEspecial;
+}
+
+function initFirmaRech(){
+  var canvas=document.getElementById('firmaRechCanvas'); if(!canvas) return;
+  firmaRechCtx=canvas.getContext('2d');
+  firmaRechCtx.strokeStyle='#111';firmaRechCtx.lineWidth=2.5;firmaRechCtx.lineCap='round';
+  function getPos(e){var r=canvas.getBoundingClientRect();var touch=e.touches?e.touches[0]:e;return{x:(touch.clientX-r.left)*(canvas.width/r.width),y:(touch.clientY-r.top)*(canvas.height/r.height)};}
+  canvas.addEventListener('mousedown',function(e){firmaRechDrawing=true;var p=getPos(e);firmaRechCtx.beginPath();firmaRechCtx.moveTo(p.x,p.y);});
+  canvas.addEventListener('mousemove',function(e){if(!firmaRechDrawing) return;var p=getPos(e);firmaRechCtx.lineTo(p.x,p.y);firmaRechCtx.stroke();});
+  canvas.addEventListener('mouseup',function(){firmaRechDrawing=false;});
+  canvas.addEventListener('touchstart',function(e){e.preventDefault();firmaRechDrawing=true;var p=getPos(e);firmaRechCtx.beginPath();firmaRechCtx.moveTo(p.x,p.y);},{passive:false});
+  canvas.addEventListener('touchmove',function(e){e.preventDefault();if(!firmaRechDrawing) return;var p=getPos(e);firmaRechCtx.lineTo(p.x,p.y);firmaRechCtx.stroke();},{passive:false});
+  canvas.addEventListener('touchend',function(){firmaRechDrawing=false;});
+}
+function limpiarFirmaRech(){var c=document.getElementById('firmaRechCanvas');if(c&&firmaRechCtx)firmaRechCtx.clearRect(0,0,c.width,c.height);}
+
+function previewFoto(input){
+  var prev=document.getElementById('fotoPreview'); if(!prev) return;
+  if(input.files&&input.files[0]){
+    var r=new FileReader();
+    r.onload=function(e){prev.innerHTML='<img src="'+e.target.result+'" style="width:100%;border-radius:8px;max-height:200px;object-fit:cover"/><div style="font-size:10px;color:#43aa8b;font-family:monospace;margin-top:4px">✓ Foto registrada · '+fmtDateTime(Date.now())+'</div>';};
+    r.readAsDataURL(input.files[0]);
+  }
+}
+
+async function confirmarCierreEspecial(){
+  if(!cierreEspFbKey||!cierreEspTipo) return;
+  var upd={est:'finalizado',tsFin:Date.now()};
+  if(cierreEspTipo==='ausente'){
+    upd.cierreTipo='paciente_ausente';
+    upd.obsAusente=document.getElementById('obsAusente').value.trim();
+    var fotoInp=document.getElementById('fotoDomicilio');
+    if(fotoInp.files&&fotoInp.files[0]){
+      var r=new FileReader();
+      r.onload=async function(e){
+        upd.fotoDomicilio=e.target.result;
+        if(db) await db.ref('auxilios/'+cierreEspFbKey).update(upd);
+        if(cierreEspMovilId&&db) await db.ref('moviles/'+cierreEspMovilId).update({est:'libre'});
+        addBit(cierreEspFbKey,'🚪 PACIENTE AUSENTE · Foto registrada · '+me.n+' · '+fmtDateTime(Date.now()),'fin');
+        document.getElementById('cierreEspecialBox').classList.remove('show');
+      };
+      r.readAsDataURL(fotoInp.files[0]);
+      return;
+    }
+  } else if(cierreEspTipo==='rechaza_atencion'||cierreEspTipo==='rechaza_derivacion'){
+    var nombre=document.getElementById('rechNombre').value.trim();
+    var dni=document.getElementById('rechDni').value.trim();
+    var canvas=document.getElementById('firmaRechCanvas');
+    var firmaImg=canvas?canvas.toDataURL('image/png'):'';
+    upd.cierreTipo=cierreEspTipo;
+    upd.rechNombre=nombre;
+    upd.rechDni=dni;
+    upd.rechFirmaImg=firmaImg;
+    upd.rechObs=document.getElementById('obsRechazo').value.trim();
+    upd.rechTs=Date.now();
+    upd.rechMedico=me.n;
+  }
+  if(db) await db.ref('auxilios/'+cierreEspFbKey).update(upd);
+  if(cierreEspMovilId&&db) await db.ref('moviles/'+cierreEspMovilId).update({est:'libre'});
+  var lbl=cierreEspTipo==='ausente'?'🚪 PACIENTE AUSENTE':cierreEspTipo==='rechaza_atencion'?'✋ RECHAZA ATENCIÓN':'🏥 RECHAZA DERIVACIÓN';
+  addBit(cierreEspFbKey,lbl+' · '+me.n+' · '+fmtDateTime(Date.now()),'fin');
+  document.getElementById('cierreEspecialBox').classList.remove('show');
+  cierreEspFbKey=null;cierreEspMovilId=null;
+}
+
+// ============================================================
+// HOSPITALES ARGENTINA — BÚSQUEDA ONLINE MEJORADA
+// ============================================================
+var HOSP_ARG=[
+  {n:'Hospital General de Agudos Ramos Mejía',dir:'Entre Ríos 1900, CABA',lat:-34.6175,lng:-58.3952},
+  {n:'Hospital Italiano de Buenos Aires',dir:'Tte. Gral. Juan D. Perón 4190, CABA',lat:-34.6126,lng:-58.4358},
+  {n:'Hospital Británico de Buenos Aires',dir:'Perdriel 74, CABA',lat:-34.6214,lng:-58.3742},
+  {n:'Hospital de Clínicas José de San Martín',dir:'Av. Córdoba 2351, CABA',lat:-34.5995,lng:-58.3997},
+  {n:'Hospital Fernández',dir:'Cerviño 3356, CABA',lat:-34.5862,lng:-58.4064},
+  {n:'Hospital Rivadavia',dir:'Av. Las Heras 2670, CABA',lat:-34.5915,lng:-58.4010},
+  {n:'Hospital Argerich',dir:'Pi y Margall 750, CABA',lat:-34.6278,lng:-58.3636},
+  {n:'Hospital Piñero',dir:'Varela 1301, CABA',lat:-34.6445,lng:-58.4489},
+  {n:'Hospital Durand',dir:'Av. Díaz Vélez 5044, CABA',lat:-34.6133,lng:-58.4306},
+  {n:'Hospital Muñiz',dir:'Uspallata 2272, CABA',lat:-34.6345,lng:-58.3892},
+  {n:'Hospital Tornú',dir:'Combate de los Pozos 2155, CABA',lat:-34.5645,lng:-58.4578},
+  {n:'Hospital Álvarez',dir:'Av. Aranguren 2701, CABA',lat:-34.6301,lng:-58.4678},
+  {n:'Hospital Santojanni',dir:'Pilar 950, CABA',lat:-34.6492,lng:-58.4912},
+  {n:'Hospital Vélez Sársfield',dir:'Av. Gaona 840, CABA',lat:-34.6212,lng:-58.4742},
+  {n:'Hospital Santa Lucía',dir:'San Juan 2021, CABA',lat:-34.6195,lng:-58.3872},
+  {n:'Hospital Zubizarreta',dir:'Venezuela 3596, CABA',lat:-34.6252,lng:-58.4512},
+  {n:'Hospital Cosme Argerich',dir:'Pi y Margall 750, CABA',lat:-34.6278,lng:-58.3636},
+  {n:'Hospital Pedro de Elizalde',dir:'Av. Montes de Oca 40, CABA',lat:-34.6268,lng:-58.3732},
+  {n:'Hospital Ricardo Gutiérrez',dir:'Gallo 1330, CABA',lat:-34.5978,lng:-58.4072},
+  {n:'Hospital Garrahan',dir:'Combate de los Pozos 1881, CABA',lat:-34.6348,lng:-58.3878},
+  // GBA Norte
+  {n:'Hospital Vicente López y Planes',dir:'25 de Mayo 1629, General Rodríguez',lat:-34.6084,lng:-58.9503},
+  {n:'Hospital Profesor Alejandro Posadas',dir:'Av. Illia s/n, El Palomar',lat:-34.6087,lng:-58.5921},
+  {n:'Hospital San Isidro',dir:'Diego Palma 505, San Isidro',lat:-34.4716,lng:-58.5189},
+  {n:'Hospital Central de San Isidro',dir:'Ituzaingó 930, San Isidro',lat:-34.4701,lng:-58.5175},
+  {n:'Hospital Larcade',dir:'Av. de Mayo 1353, San Miguel',lat:-34.5436,lng:-58.7127},
+  {n:'Hospital Municipal de Tigre',dir:'Cazón 1180, Tigre',lat:-34.4256,lng:-58.5797},
+  // GBA Oeste
+  {n:'Hospital Simplemente Evita',dir:'Av. Vergara y Dr. Ortiz de Rosas, González Catán',lat:-34.7636,lng:-58.6334},
+  {n:'Hospital Paroissien',dir:'Av. Nicolás Avellaneda 3360, La Matanza',lat:-34.6756,lng:-58.5678},
+  {n:'Hospital Zonal General Isidoro Iriarte',dir:'Av. Hipólito Yrigoyen 7856, Quilmes',lat:-34.7312,lng:-58.2545},
+  {n:'Hospital Lucio Meléndez',dir:'Av. Monteverde 4004, Adrogué',lat:-34.8012,lng:-58.3912},
+  // GBA Sur
+  {n:'Hospital Fiorito',dir:'Av. Belgrano 3100, Avellaneda',lat:-34.6676,lng:-58.3536},
+  {n:'Hospital Narciso López',dir:'Vélez Sársfield 2617, Lanús',lat:-34.7012,lng:-58.3845},
+  {n:'Hospital Evita Pueblo',dir:'Av. Monteverde 2450, Berazategui',lat:-34.7601,lng:-58.2123},
+  {n:'Hospital Mi Pueblo',dir:'Av. Florencio Varela 1789, Florencio Varela',lat:-34.8234,lng:-58.2756},
+  // Interior
+  {n:'Hospital Privado de Córdoba',dir:'Naciones Unidas 346, Córdoba',lat:-31.3901,lng:-64.1834},
+  {n:'Hospital Rawson',dir:'Av. Vélez Sársfield 2311, Córdoba',lat:-31.4123,lng:-64.1967},
+  {n:'Hospital Central Mendoza',dir:'Av. José F. Moreno 88, Mendoza',lat:-32.8952,lng:-68.8432},
+  {n:'Hospital El Carmen',dir:'Tirasso 1355, Godoy Cruz, Mendoza',lat:-32.9234,lng:-68.8523},
+  {n:'Hospital Ángel C. Padilla',dir:'Alberdi 550, Tucumán',lat:-26.8156,lng:-65.2134},
+  {n:'Hospital Nuevo de Rosario',dir:'Av. Pellegrini 3100, Rosario',lat:-32.9567,lng:-60.6423},
+  {n:'Hospital Provincial Centenario',dir:'Urquiza 3101, Rosario',lat:-32.9345,lng:-60.6512},
+  {n:'Hospital Materno Neonatal Córdoba',dir:'Av. Enrique Barros esq. Ferroviarios, Córdoba',lat:-31.4567,lng:-64.2123},
+  {n:'Hospital San Roque',dir:'Av. Gral. Paz 1250, Córdoba',lat:-31.4234,lng:-64.1789},
+  {n:'Hospital Eva Perón (Granadero Baigorria)',dir:'Cervantes 150, Granadero Baigorria',lat:-32.8712,lng:-60.7234},
+];
+
+var hospBusqTimer={};
+
+function buscarHospitalLocal(val,fbKey){
+  var sugg=document.getElementById('hospSugg_'+fbKey); if(!sugg) return;
+  if(val.length<2){sugg.style.display='none';return;}
+  clearTimeout(hospBusqTimer[fbKey]);
+  hospBusqTimer[fbKey]=setTimeout(function(){
+    var q=val.toLowerCase();
+    // Buscar en lista local primero
+    var locales=HOSP_ARG.filter(function(h){
+      return h.n.toLowerCase().indexOf(q)>=0||h.dir.toLowerCase().indexOf(q)>=0;
+    }).slice(0,5);
+    // Mostrar resultados
+    sugg.innerHTML='';
+    var ax=auxilios[fbKey];
+    locales.forEach(function(h){
+      var dist=ax&&ax.lat?haverD(ax.lat,ax.lng,h.lat,h.lng):null;
+      var item=document.createElement('div');item.className='sugg-item';
+      item.innerHTML='<div style="font-size:13px;font-weight:700;color:#fff">🏥 '+h.n+'</div>'
+        +'<div style="font-size:11px;color:#4a6a80;font-family:monospace">📍 '+h.dir+(dist?' · '+dist.toFixed(1)+' km':'')+'</div>';
+      item.onclick=function(){
+        document.getElementById('destInp_'+fbKey).value=h.n;
+        hospData[fbKey]={name:h.n,dir:h.dir,lat:h.lat,lng:h.lng};
+        var prev=document.getElementById('hospPreview_'+fbKey);
+        if(prev){
+          var min=dist?Math.round(dist/0.4):null;
+          prev.innerHTML='<span style="color:#43aa8b">✓ '+h.n+'</span> · '+h.dir+(dist?' · <span style="color:#f9c74f">'+dist.toFixed(1)+' km · '+min+' min est.</span>':'');
+        }
+        sugg.style.display='none';
+      };
+      sugg.appendChild(item);
+    });
+    // Si hay pocos resultados locales, buscar también online
+    if(locales.length<3){
+      fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(val+' hospital Argentina')+'&limit=4&addressdetails=1&accept-language=es')
+        .then(function(r){return r.json();})
+        .then(function(data){
+          data.forEach(function(d){
+            var name=d.name||d.display_name.split(',')[0];
+            var addr=(d.address.road||'')+(d.address.house_number?' '+d.address.house_number:'');
+            var city=d.address.city||d.address.town||d.address.municipality||'';
+            var prov=d.address.state||'';
+            var label=name+(addr?', '+addr:'')+(city?', '+city:'')+(prov?', '+prov:'');
+            var lat=parseFloat(d.lat),lng=parseFloat(d.lon);
+            var dist2=ax&&ax.lat?haverD(ax.lat,ax.lng,lat,lng):null;
+            var item2=document.createElement('div');item2.className='sugg-item';
+            item2.innerHTML='<div style="font-size:13px;font-weight:700;color:#c9d6df">🏥 '+name+'</div>'
+              +'<div style="font-size:11px;color:#4a6a80;font-family:monospace">📍 '+(addr||city||prov)+(dist2?' · '+dist2.toFixed(1)+' km':'')+'</div>';
+            item2.onclick=function(){
+              document.getElementById('destInp_'+fbKey).value=name;
+              hospData[fbKey]={name:name,dir:addr+(city?', '+city:''),lat:lat,lng:lng};
+              var prev=document.getElementById('hospPreview_'+fbKey);
+              if(prev){
+                var min2=dist2?Math.round(dist2/0.4):null;
+                prev.innerHTML='<span style="color:#43aa8b">✓ '+name+'</span> · '+(addr||city)+(dist2?' · <span style="color:#f9c74f">'+dist2.toFixed(1)+' km · '+min2+' min est.</span>':'');
+              }
+              sugg.style.display='none';
+            };
+            sugg.appendChild(item2);
+          });
+          if(sugg.children.length>0) sugg.style.display='block';
+        }).catch(function(){});
+    }
+    if(sugg.children.length>0) sugg.style.display='block';
+  },300);
+}
+
+// Override buscarHospital to use new function
+function buscarHospital(val,fbKey){buscarHospitalLocal(val,fbKey);}
+
+// ============================================================
+// RECORRIDOS EN MAPA — LIMPIAR AL FINALIZAR
+// ============================================================
+var rutaMovilActual=null; // polyline de la ruta del móvil
+
+function limpiarRutaMovil(){
+  if(mapMovil&&rutaMovilActual){
+    try{mapMovil.removeLayer(rutaMovilActual);}catch(e){}
+    rutaMovilActual=null;
+  }
+}
+
+async function dibujarRutaMovil(fromLat,fromLng,toLat,toLng,color){
+  if(!mapMovil) return;
+  limpiarRutaMovil();
+  try{
+    var url='https://router.project-osrm.org/route/v1/driving/'+fromLng+','+fromLat+';'+toLng+','+toLat+'?overview=full&geometries=geojson';
+    var resp=await fetch(url);var d=await resp.json();
+    if(!d.routes||!d.routes.length) return;
+    var coords=d.routes[0].geometry.coordinates.map(function(c){return[c[1],c[0]];});
+    var km=(d.routes[0].distance/1000).toFixed(1);
+    var min=Math.round(d.routes[0].duration/60);
+    rutaMovilActual=L.polyline(coords,{color:color||'#00b4d8',weight:5,opacity:0.9}).addTo(mapMovil);
+    mapMovil.fitBounds(rutaMovilActual.getBounds(),{padding:[20,20]});
+    return{km:km,min:min};
+  }catch(e){return null;}
+}
+
+// Override marcarLlegada to clear route when arriving
+var _marcarLlegadaOrig=marcarLlegada;
+async function marcarLlegada(fbKey){
+  limpiarRutaMovil(); // Limpiar ruta al llegar
+  await _marcarLlegadaOrig(fbKey);
+}
+
+// Override aceptarAux to draw route when accepting
+var _aceptarAuxConRuta=aceptarAux;
+
+// ============================================================
+// PANEL MÓVILES CON ESTADO CONDICIONAL (versión definitiva)
+// ============================================================
+
+// ============================================================
+// RENDER MI AUXILIO — VERSIÓN DEFINITIVA CON CIERRE ESPECIAL
+// ============================================================
+function renderMiAux(){
+  if(!me||rolActual!=='movil') return;
+  var a=auxArr().find(function(x){return ['asignado','activo','llegada','derivando'].indexOf(x.est)>=0&&x.movilId===me.mid;});
+  var el=document.getElementById('miAuxContent');
+  if(!a){el.innerHTML='<div class="empty">Sin auxilio asignado.<br>Esperá la asignación del despacho.</div>';return;}
+  var pc=priColor(a.pri);
+  var loc=(a.loc||'')+(a.prov?', '+a.prov:'');
+  var gmUrl=a.lat&&a.lng
+    ?'https://www.google.com/maps/dir/?api=1&destination='+a.lat+','+a.lng+'&travelmode=driving'
+    :'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(a.dir+(loc?', '+loc:''))+'&travelmode=driving';
+  var derHtml='';
+  if(a.est==='llegada'||a.est==='derivando'){
+    if(!a.derivacion){
+      derHtml='<button class="mbtn m-blue" id="btnSolDer">🏥 SOLICITAR DERIVACIÓN</button>';
+    } else if(a.derivacion==='solicitada'){
+      derHtml='<div style="background:rgba(239,35,60,0.1);border:1px solid #ef233c;border-radius:10px;padding:12px;margin-bottom:10px;text-align:center"><div style="font-size:14px;font-weight:700;color:#ef233c">🔴 DERIVACIÓN SOLICITADA</div><div style="font-size:11px;color:#4a6a80;font-family:monospace;margin-top:4px">Esperando respuesta del despacho...</div></div>';
+    } else if(a.derivacion==='buscando'){
+      derHtml='<div style="background:rgba(249,199,79,0.1);border:1px solid #f9c74f;border-radius:10px;padding:12px;margin-bottom:10px;text-align:center"><div style="font-size:14px;font-weight:700;color:#f9c74f">🟡 BUSCANDO DESTINO</div><div style="font-size:11px;color:#4a6a80;font-family:monospace;margin-top:4px">El despacho está buscando destino...</div></div>';
+    } else if(a.derivacion==='confirmada'){
+      var destGmUrl='https://www.google.com/maps/dir/?api=1&destination='+(a.destinoLat&&a.destinoLng?a.destinoLat+','+a.destinoLng:encodeURIComponent(a.destino||''))+'&travelmode=driving';
+      if(!a.derivacionLeida){
+        derHtml='<div style="background:rgba(67,170,139,0.1);border:2px solid #43aa8b;border-radius:10px;padding:14px;margin-bottom:10px">'
+          +'<div style="font-size:11px;color:#43aa8b;font-family:monospace;margin-bottom:6px">🟢 DESTINO CONFIRMADO</div>'
+          +'<div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:4px">'+(a.destino||'—')+'</div>'
+          +(a.destinoDir?'<div style="font-size:13px;color:#c9d6df;margin-bottom:8px">📍 '+a.destinoDir+'</div>':'')
+          +(a.destinoMin?'<div style="font-size:13px;color:#f9c74f;font-family:monospace;font-weight:700;margin-bottom:10px">⏱ '+a.destinoMin+' min · '+a.destinoKm+' km</div>':'')
+          +'<a href="'+destGmUrl+'" target="_blank" style="display:block;background:#43aa8b;color:#000;text-align:center;padding:12px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:8px">🗺️ ABRIR EN GOOGLE MAPS</a>'
+          +'<button class="mbtn m-green" id="btnLeidoDer" style="margin-bottom:0">✓ CONFIRMAR Y SALIR AL DESTINO</button>'
+          +'</div>';
+      } else {
+        derHtml='<div style="background:rgba(67,170,139,0.1);border:2px solid #43aa8b;border-radius:10px;padding:14px;margin-bottom:10px">'
+          +'<div style="font-size:11px;color:#43aa8b;font-family:monospace;margin-bottom:6px">🟢 EN CAMINO AL DESTINO</div>'
+          +'<div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:4px">'+(a.destino||'—')+'</div>'
+          +(a.destinoDir?'<div style="font-size:13px;color:#c9d6df;margin-bottom:8px">📍 '+a.destinoDir+'</div>':'')
+          +(a.destinoMin?'<div style="font-size:13px;color:#f9c74f;font-family:monospace;font-weight:700;margin-bottom:10px">⏱ '+a.destinoMin+' min · '+a.destinoKm+' km</div>':'')
+          +'<a href="'+destGmUrl+'" target="_blank" style="display:block;background:#0077b6;color:#fff;text-align:center;padding:12px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:8px">🗺️ ABRIR EN GOOGLE MAPS</a>'
+          +'<button class="mbtn m-green" id="btnFinalizarDer" style="margin-bottom:0">✓ LLEGUÉ AL HOSPITAL — FINALIZAR</button>'
+          +'</div>';
+      }
+    }
+  }
+  var statusBtn='';
+  if(a.est==='asignado'){
+    statusBtn='<div style="background:rgba(249,199,79,0.08);border:1px solid rgba(249,199,79,0.3);border-radius:10px;padding:14px;text-align:center;margin-bottom:10px"><div style="font-size:22px;margin-bottom:4px">⏳</div><div style="font-size:13px;color:#f9c74f;font-family:monospace">Esperando confirmación...</div></div>';
+  } else if(a.est==='activo'){
+    statusBtn='<button class="mbtn m-blue" id="btnLlegada" style="font-size:17px;padding:16px">📍 LLEGUÉ AL DOMICILIO</button>';
+  } else if(a.est==='llegada'||a.est==='derivando'){
+    statusBtn=derHtml
+      +'<button class="mbtn" id="btnFinalizar" style="background:rgba(239,35,60,0.15);color:#ef233c;border:2px solid #ef233c;font-size:16px;padding:15px;margin-top:6px">✓ FINALIZAR / COMPLETAR IPH</button>'
+      +'<button class="mbtn" id="btnCierreEsp" style="background:rgba(249,199,79,0.1);color:#f9c74f;border:2px solid #f9c74f;font-size:15px;padding:14px;margin-top:6px">⚠️ CIERRE ESPECIAL<div style="font-size:10px;font-weight:400;margin-top:3px">Paciente ausente · Rechaza atención · Rechaza derivación</div></button>';
+  }
+  var tlMov='<div style="display:flex;gap:3px;margin-bottom:14px">';
+  [{ic:'📞',lbl:'LLAMADA',ts:a.ts},{ic:'🚑',lbl:'DESPACHO',ts:a.tsAsig},{ic:'▶',lbl:'SALIDA',ts:a.tsAcept},{ic:'📍',lbl:'ARRIBO',ts:a.tsLlegada},{ic:'✓',lbl:'CIERRE',ts:a.tsFin}].forEach(function(s){
+    var done=!!s.ts;
+    tlMov+='<div style="flex:1;text-align:center;background:'+(done?'rgba(67,170,139,0.15)':'rgba(30,45,64,0.4)')+';border-radius:6px;padding:6px 2px;border:1px solid '+(done?'#43aa8b':'#1e2d40')+'">'
+      +'<div style="font-size:16px">'+s.ic+'</div>'
+      +'<div style="font-size:7px;color:'+(done?'#43aa8b':'#4a6a80')+';font-family:monospace;letter-spacing:0.5px;margin-top:2px">'+s.lbl+'</div>'
+      +'<div style="font-size:10px;color:#43aa8b;font-family:monospace;font-weight:700;margin-top:1px">'+(done?fmtHM(s.ts):'')+'</div>'
+      +'</div>';
+  });
+  tlMov+='</div>';
+  el.innerHTML=
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
+    +'<div style="background:'+pc+';color:#000;font-weight:900;font-size:13px;padding:6px 14px;border-radius:20px;letter-spacing:2px">'+(a.pri||'').toUpperCase()+'</div>'
+    +'<div style="font-size:11px;color:#4a6a80;font-family:monospace">AUXILIO #'+a.num+'</div>'
+    +(a.esHijo?'<div style="font-size:10px;color:#00b4d8;font-family:monospace;border:1px solid #00b4d8;padding:2px 7px;border-radius:4px">🔗 VINCULADO</div>':'')
+    +'</div>'
+    +tlMov
+    +'<div style="background:#0d1117;border-radius:12px;padding:14px;margin-bottom:10px;border-left:4px solid '+pc+'">'
+    +'<div style="font-size:10px;color:#4a6a80;letter-spacing:2px;font-family:monospace;margin-bottom:6px">PACIENTE</div>'
+    +'<div style="font-size:24px;font-weight:900;color:#fff;margin-bottom:4px">'+a.nom+' '+a.ape+'</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">'
+    +'<div style="background:#07090f;border-radius:6px;padding:5px 10px;font-size:13px;color:#c9d6df"><span style="color:#4a6a80;font-size:10px;font-family:monospace">EDAD </span>'+(a.eda||'—')+'</div>'
+    +'<div style="background:#07090f;border-radius:6px;padding:5px 10px;font-size:13px;color:#c9d6df"><span style="color:#4a6a80;font-size:10px;font-family:monospace">SEXO </span>'+(a.sexo||'—')+'</div>'
+    +'<div style="background:#07090f;border-radius:6px;padding:5px 10px;font-size:13px;color:#c9d6df"><span style="color:#4a6a80;font-size:10px;font-family:monospace">DNI </span>'+(a.dni||'—')+'</div>'
+    +'</div>'
+    +(a.tel?'<a href="tel:'+a.tel+'" style="display:flex;align-items:center;gap:8px;background:rgba(0,180,216,0.1);border:1px solid #00b4d8;border-radius:8px;padding:10px 12px;margin-bottom:8px;text-decoration:none"><span style="font-size:20px">📞</span><div><div style="font-size:10px;color:#4a6a80;font-family:monospace;letter-spacing:1px">'+(a.nomLlam?a.nomLlam+(a.relacion?' · '+a.relacion:''):'TELÉFONO CONTACTO')+'</div><div style="font-size:20px;font-weight:700;color:#00b4d8">'+a.tel+'</div></div></a>':'')
+    +'<div style="font-size:13px;color:#4a6a80;font-family:monospace">🏥 '+(a.obr||'Sin cobertura')+(a.coseguro?' &nbsp;·&nbsp; <span style="color:#f9c74f;font-weight:700">Coseguro: $'+a.montoCoseguro+'</span>':'')+'</div>'
+    +'</div>'
+    +'<div style="background:#0d1117;border-radius:12px;padding:14px;margin-bottom:10px;border-left:4px solid #ef233c">'
+    +'<div style="font-size:10px;color:#ef233c;letter-spacing:2px;font-family:monospace;margin-bottom:8px">🩺 MOTIVO / SÍNTOMAS</div>'
+    +'<div style="font-size:17px;color:#fff;line-height:1.5;font-weight:600">'+a.sin+'</div>'
+    +'</div>'
+    +'<a href="'+gmUrl+'" target="_blank" style="display:block;background:#0d1117;border-radius:12px;padding:14px;margin-bottom:10px;border-left:4px solid #43aa8b;text-decoration:none">'
+    +'<div style="font-size:10px;color:#43aa8b;letter-spacing:2px;font-family:monospace;margin-bottom:6px">📍 UBICACIÓN — tocar para navegar</div>'
+    +'<div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:4px">'+a.dir+'</div>'
+    +(a.entre1||a.entre2?'<div style="font-size:13px;color:#c9d6df;margin-bottom:2px">Entre '+a.entre1+(a.entre2?' y '+a.entre2:'')+'</div>':'')
+    +(a.pisoDepto?'<div style="font-size:13px;color:#c9d6df;margin-bottom:2px">'+a.pisoDepto+'</div>':'')
+    +(loc?'<div style="font-size:13px;color:#4a6a80;font-family:monospace;margin-bottom:6px">'+loc+'</div>':'')
+    +'<div style="background:#43aa8b;color:#000;text-align:center;padding:10px;border-radius:8px;font-weight:700;font-size:14px;margin-top:6px">🗺️ ABRIR EN GOOGLE MAPS</div>'
+    +'</a>'
+    +'<div id="mapMovilEl" style="height:200px;border-radius:10px;border:1px solid #1e2d40;margin-bottom:12px;overflow:hidden"></div>'
+    +'<div style="font-size:11px;color:#4a6a80;font-family:monospace;text-align:center;margin-bottom:12px">⏱ '+(a.min||'—')+' min · '+(a.km||'—')+' km'+(a.despachador?' &nbsp;·&nbsp; Desp: '+a.despachador:'')+'</div>'
+    +statusBtn;
+  setTimeout(function(){
+    var fbKey=a.fbKey,movilId=a.movilId,loc2=a.loc||'base';
+    var btnL=document.getElementById('btnLlegada');if(btnL) btnL.onclick=function(){marcarLlegada(fbKey);};
+    var btnF=document.getElementById('btnFinalizar');if(btnF) btnF.onclick=function(){abrirCierre(fbKey,movilId,loc2,a);};
+    var btnSD=document.getElementById('btnSolDer');if(btnSD) btnSD.onclick=function(){solicitarDerivacion(fbKey);};
+    var btnLD=document.getElementById('btnLeidoDer');if(btnLD) btnLD.onclick=function(){confirmarLecturaYSalir(fbKey,a);};
+    var btnFD=document.getElementById('btnFinalizarDer');if(btnFD) btnFD.onclick=function(){abrirCierre(fbKey,movilId,loc2,a);};
+    var btnCE=document.getElementById('btnCierreEsp');if(btnCE) btnCE.onclick=function(){abrirCierreEspecial(fbKey,movilId);};
+    initMapMovil(a);
+  },100);
+}
+
 </script>
 </body>
 </html>
+
