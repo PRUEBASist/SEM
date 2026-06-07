@@ -253,126 +253,132 @@ textarea.finp{resize:vertical;min-height:70px}
     <button class="tnb" id="tnT1" onclick="goTab('T',1)"><div class="tnb-ic">📋</div>MIS AUXILIOS</button>
   </div>
   <div class="content">
-    <div class="tab on" id="tabT0">
+    <div class="tab on" id="tabT0" style="background:#f5f7fa;padding:0">
 
-      <!-- SECCION: LLAMANTE -->
-      <div style="background:rgba(0,180,216,0.07);border:1px solid rgba(0,180,216,0.3);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:none" id="auxPadreBanner">
-        <div style="font-size:10px;color:#00b4d8;letter-spacing:2px;font-family:monospace;margin-bottom:4px">MODO: AGREGAR PACIENTE A DOMICILIO</div>
-        <div id="auxPadreBannerTxt" style="font-size:13px;color:#fff;font-weight:700"></div>
-        <button onclick="cancelarHijo()" style="background:none;border:1px solid #1e2d40;color:#4a6a80;font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;margin-top:6px;font-family:Arial">✕ Cancelar — volver a auxilio normal</button>
-      </div>
-
-      <div class="sect-hdr">DATOS DEL LLAMANTE</div>
-      <div class="flabel">TELÉFONO DE CONTACTO</div>
-      <input class="finp" id="pTel" placeholder="Ej: 11-1234-5678" type="tel" oninput="buscarPacienteExistente('tel',this.value)"/>
-      <div id="pacEncontradoBox" style="display:none;margin-bottom:10px"></div>
-      <div class="flabel">NOMBRE DEL LLAMANTE</div>
-      <input class="finp" id="pNomLlam" placeholder="¿Quién llama?"/>
-      <div class="flabel">RELACIÓN CON EL PACIENTE</div>
-      <select class="finp" id="pRelacion">
-        <option value="">— Seleccionar —</option>
-        <option>Paciente mismo</option>
-        <option>Familiar</option>
-        <option>Vecino</option>
-        <option>Médico tratante</option>
-        <option>Personal de salud</option>
-        <option>Transeúnte</option>
-        <option>Otro</option>
-      </select>
-
-      <!-- SECCION: PACIENTE -->
-      <div class="sect-hdr">DATOS DEL PACIENTE</div>
-      <div class="grid2">
-        <div>
-          <div class="flabel">NOMBRE</div>
-          <input class="finp" id="pNom" placeholder="Nombre"/>
-        </div>
-        <div>
-          <div class="flabel">APELLIDO</div>
-          <input class="finp" id="pApe" placeholder="Apellido"/>
-        </div>
-      </div>
-      <div class="grid2">
-        <div>
-          <div class="flabel">DNI</div>
-          <input class="finp" id="pDni" placeholder="12.345.678" oninput="buscarPacienteExistente('dni',this.value)"/>
-        </div>
-        <div>
-          <div class="flabel">EDAD</div>
-          <input class="finp" id="pEda" placeholder="45" type="number"/>
-        </div>
-      </div>
-      <div class="flabel">SEXO</div>
-      <div style="display:flex;gap:7px;margin-bottom:10px">
-        <button class="pc-btn" id="tsbM" onclick="setSexo('M')" style="flex:1;padding:11px;background:rgba(0,180,216,0.15);color:#00b4d8;border:1px solid #00b4d8">♂ MASCULINO</button>
-        <button class="pc-btn" id="tsbF" onclick="setSexo('F')" style="flex:1;padding:11px;background:transparent;color:#4a6a80;border:1px solid #1e2d40">♀ FEMENINO</button>
-        <button class="pc-btn" id="tsbO" onclick="setSexo('O')" style="flex:1;padding:11px;background:transparent;color:#4a6a80;border:1px solid #1e2d40">⊕ OTRO</button>
+      <!-- BANNER HIJO -->
+      <div style="background:#e3f2fd;border-bottom:2px solid #00b4d8;padding:10px 14px;display:none" id="auxPadreBanner">
+        <div style="font-size:10px;color:#0077b6;letter-spacing:2px;font-family:monospace;margin-bottom:2px">MODO: AGREGAR PACIENTE AL DOMICILIO</div>
+        <div id="auxPadreBannerTxt" style="font-size:13px;color:#0d1117;font-weight:700"></div>
+        <button onclick="cancelarHijo()" style="background:none;border:1px solid #00b4d8;color:#0077b6;font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;margin-top:5px;font-family:Arial">✕ Cancelar</button>
       </div>
 
-      <!-- SECCION: OBRA SOCIAL -->
-      <div class="sect-hdr">COBERTURA MÉDICA</div>
-      <div class="flabel">OBRA SOCIAL / PREPAGA</div>
-      <input class="finp" id="pObr" placeholder="Ej: OSDE, PAMI, Swiss Medical, Particular"/>
-      <div class="flabel">NÚMERO DE SOCIO / AFILIADO</div>
-      <input class="finp" id="pNroSocio" placeholder="Nº de afiliado"/>
-      <div class="toggle-row">
-        <div class="toggle-lbl">¿Abona coseguro?</div>
-        <label class="toggle-sw"><input type="checkbox" id="pCoseguro" onchange="toggleCoseguro()"/><span class="toggle-sl"></span></label>
-      </div>
-      <div id="coseguroMonto" style="display:none;margin-bottom:10px">
-        <div class="flabel">MONTO COSEGURO ($)</div>
-        <input class="finp" id="pMontoCoseguro" placeholder="Ej: 2500" type="number"/>
+      <!-- PASO 1: URGENTE — fondo blanco -->
+      <div id="paso1" style="background:#fff;padding:14px;border-bottom:3px solid #e0e0e0">
+        <div style="font-size:11px;font-weight:700;color:#ef233c;letter-spacing:2px;font-family:monospace;margin-bottom:10px">PASO 1 — DATOS URGENTES</div>
+
+        <!-- PRIORIDAD — grande y visible -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+          <button id="tpbr" onclick="setTPri('rojo')" style="background:#ef233c;color:#fff;border:none;border-radius:10px;padding:14px 8px;font-weight:900;font-size:15px;cursor:pointer;font-family:Arial;letter-spacing:1px;box-shadow:0 2px 8px rgba(239,35,60,0.4)">🔴<br>ROJO<br><span style="font-size:10px;font-weight:400">URGENTE</span></button>
+          <button id="tpba" onclick="setTPri('amarillo')" style="background:#fff;color:#999;border:3px solid #ddd;border-radius:10px;padding:14px 8px;font-weight:900;font-size:15px;cursor:pointer;font-family:Arial;letter-spacing:1px">🟡<br>AMARILLO<br><span style="font-size:10px;font-weight:400">MODERADO</span></button>
+          <button id="tpbv" onclick="setTPri('verde')" style="background:#fff;color:#999;border:3px solid #ddd;border-radius:10px;padding:14px 8px;font-weight:900;font-size:15px;cursor:pointer;font-family:Arial;letter-spacing:1px">🟢<br>VERDE<br><span style="font-size:10px;font-weight:400">LEVE</span></button>
+        </div>
+        <div id="tPriErr" style="color:#ef233c;font-size:11px;font-family:monospace;min-height:12px;margin-bottom:8px"></div>
+
+        <!-- DIRECCIÓN -->
+        <div style="font-size:11px;font-weight:700;color:#333;letter-spacing:1px;font-family:monospace;margin-bottom:5px">📍 DIRECCIÓN</div>
+        <div style="position:relative;margin-bottom:8px">
+          <input id="pDir" placeholder="Calle y número..." autocomplete="off" oninput="buscarDir(this.value)"
+            style="width:100%;background:#fff;border:2px solid #ddd;border-radius:8px;color:#111;font-size:16px;padding:12px 14px;outline:none;font-family:Arial;box-sizing:border-box"/>
+          <div class="sugg-box" id="dirSugg" style="background:#fff;border-color:#00b4d8;color:#111"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <input id="pEntre1" placeholder="Entre calle..." style="background:#f8f8f8;border:1px solid #ddd;border-radius:8px;color:#333;font-size:14px;padding:10px 12px;outline:none;font-family:Arial;width:100%;box-sizing:border-box"/>
+          <input id="pEntre2" placeholder="Y calle..." style="background:#f8f8f8;border:1px solid #ddd;border-radius:8px;color:#333;font-size:14px;padding:10px 12px;outline:none;font-family:Arial;width:100%;box-sizing:border-box"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <input id="pPisoDepto" placeholder="Piso / Depto / Ref." style="background:#f8f8f8;border:1px solid #ddd;border-radius:8px;color:#333;font-size:14px;padding:10px 12px;outline:none;font-family:Arial;width:100%;box-sizing:border-box"/>
+          <input id="pLoc" placeholder="Localidad" style="background:#f8f8f8;border:1px solid #ddd;border-radius:8px;color:#333;font-size:14px;padding:10px 12px;outline:none;font-family:Arial;width:100%;box-sizing:border-box"/>
+        </div>
+        <input id="pProv" type="hidden" value=""/>
+        <div id="pPos" style="font-size:11px;color:#43aa8b;min-height:14px;font-family:monospace;margin-bottom:8px"></div>
+
+        <!-- MOTIVO -->
+        <div style="font-size:11px;font-weight:700;color:#333;letter-spacing:1px;font-family:monospace;margin-bottom:5px">🩺 MOTIVO / SÍNTOMAS</div>
+        <textarea id="pSin" placeholder="¿Qué le pasa? Describí brevemente..." rows="2"
+          style="width:100%;background:#fff;border:2px solid #ddd;border-radius:8px;color:#111;font-size:15px;padding:11px 13px;outline:none;font-family:Arial;resize:none;box-sizing:border-box;margin-bottom:8px"></textarea>
+
+        <!-- TRIAGE rápido -->
+        <button onclick="abrirTriage()" style="width:100%;background:#fff3e0;border:2px solid #e07b00;border-radius:8px;padding:10px;font-weight:700;font-size:13px;color:#e07b00;cursor:pointer;font-family:Arial;margin-bottom:10px;text-align:left">
+          🩺 INICIAR TRIAGE GUIADO <span style="font-size:10px;font-weight:400;color:#999">— determina prioridad automáticamente</span>
+        </button>
+        <div id="triageResumen" style="display:none;background:#e8f5e9;border:1px solid #43aa8b;border-radius:8px;padding:10px;margin-bottom:10px;color:#1b5e20"></div>
+
+        <!-- TEL RÁPIDO -->
+        <div style="font-size:11px;font-weight:700;color:#333;letter-spacing:1px;font-family:monospace;margin-bottom:5px">📞 TELÉFONO CONTACTO</div>
+        <input id="pTel" type="tel" placeholder="11-1234-5678" oninput="buscarPacienteExistente('tel',this.value)"
+          style="width:100%;background:#fff;border:2px solid #ddd;border-radius:8px;color:#111;font-size:16px;padding:12px 14px;outline:none;font-family:Arial;box-sizing:border-box;margin-bottom:8px"/>
+        <div id="pacEncontradoBox" style="display:none;margin-bottom:8px"></div>
+
+        <!-- BOTÓN CREAR -->
+        <button onclick="crearAux()" style="width:100%;background:#ef233c;color:#fff;border:none;font-weight:900;font-size:18px;padding:16px;cursor:pointer;border-radius:10px;font-family:Arial;letter-spacing:2px;box-shadow:0 4px 16px rgba(239,35,60,0.4);margin-bottom:6px">
+          🚨 CREAR AUXILIO
+        </button>
+        <button onclick="toggleDatosExtra()" style="width:100%;background:#fff;color:#666;border:1px solid #ddd;font-size:13px;padding:10px;cursor:pointer;border-radius:8px;font-family:Arial" id="btnDatosExtra">
+          ▼ Agregar datos del paciente (opcional)
+        </button>
       </div>
 
-      <!-- SECCION: MOTIVO -->
-      <div class="sect-hdr">MOTIVO DE LLAMADO</div>
-      <button class="mbtn" onclick="abrirTriage()" style="background:linear-gradient(135deg,rgba(239,35,60,0.2),rgba(249,199,79,0.15));border:2px solid #ef233c;color:#fff;font-size:16px;margin-bottom:10px;letter-spacing:1px">
-        🩺 INICIAR TRIAGE GUIADO
-        <div style="font-size:10px;font-weight:400;color:#c9d6df;margin-top:3px;letter-spacing:0">Protocolo MPDS · Determina prioridad automáticamente</div>
-      </button>
-      <div id="triageResumen" style="display:none;background:#07090f;border-radius:8px;padding:10px;margin-bottom:10px;border:1px solid #1e2d40"></div>
-      <div class="flabel">SÍNTOMAS / MOTIVO</div>
-      <textarea class="finp" id="pSin" placeholder="Describí los síntomas en detalle..."></textarea>
-      <div class="flabel">PRIORIDAD</div>
-      <div style="display:flex;gap:7px;margin-bottom:10px">
-        <button class="pc-btn" id="tpbr" onclick="setTPri('rojo')" style="flex:1;padding:11px;background:rgba(239,35,60,0.15);color:#ef233c;border:1px solid #ef233c">🔴 URGENTE</button>
-        <button class="pc-btn" id="tpba" onclick="setTPri('amarillo')" style="flex:1;padding:11px;background:transparent;color:#4a6a80;border:1px solid #1e2d40">🟡 MODERADO</button>
-        <button class="pc-btn" id="tpbv" onclick="setTPri('verde')" style="flex:1;padding:11px;background:transparent;color:#4a6a80;border:1px solid #1e2d40">🟢 LEVE</button>
-      </div>
-      <div id="tPriErr" style="color:#ef233c;font-size:11px;font-family:monospace;min-height:14px;margin-bottom:8px"></div>
+      <!-- PASO 2: DATOS OPCIONALES — colapsado por defecto -->
+      <div id="paso2" style="display:none;background:#fafafa;padding:14px;border-bottom:2px solid #e0e0e0">
+        <div style="font-size:11px;font-weight:700;color:#555;letter-spacing:2px;font-family:monospace;margin-bottom:10px">DATOS DEL PACIENTE (OPCIONALES)</div>
 
-      <!-- SECCION: UBICACION -->
-      <div class="sect-hdr">UBICACIÓN</div>
-      <div class="flabel">DIRECCIÓN (calle y número)</div>
-      <div style="position:relative;margin-bottom:10px">
-        <input class="finp" id="pDir" placeholder="Ej: Av. Corrientes 1400" autocomplete="off" oninput="buscarDir(this.value)" style="margin-bottom:0"/>
-        <div class="sugg-box" id="dirSugg"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:4px">NOMBRE</div>
+            <input id="pNom" placeholder="Nombre" style="width:100%;background:#fff;border:1px solid #ddd;border-radius:8px;color:#111;font-size:15px;padding:10px 12px;outline:none;font-family:Arial;box-sizing:border-box"/>
+          </div>
+          <div>
+            <div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:4px">APELLIDO</div>
+            <input id="pApe" placeholder="Apellido" style="width:100%;background:#fff;border:1px solid #ddd;border-radius:8px;color:#111;font-size:15px;padding:10px 12px;outline:none;font-family:Arial;box-sizing:border-box"/>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:4px">DNI</div>
+            <input id="pDni" placeholder="12.345.678" oninput="buscarPacienteExistente('dni',this.value)" style="width:100%;background:#fff;border:1px solid #ddd;border-radius:8px;color:#111;font-size:15px;padding:10px 12px;outline:none;font-family:Arial;box-sizing:border-box"/>
+          </div>
+          <div>
+            <div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:4px">EDAD</div>
+            <input id="pEda" placeholder="45" type="number" style="width:100%;background:#fff;border:1px solid #ddd;border-radius:8px;color:#111;font-size:15px;padding:10px 12px;outline:none;font-family:Arial;box-sizing:border-box"/>
+          </div>
+        </div>
+
+        <div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:6px">SEXO</div>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <button id="tsbM" onclick="setSexo('M')" style="flex:1;padding:10px;background:#e3f2fd;color:#0077b6;border:2px solid #00b4d8;border-radius:8px;font-weight:700;cursor:pointer;font-family:Arial;font-size:13px">♂ MASC.</button>
+          <button id="tsbF" onclick="setSexo('F')" style="flex:1;padding:10px;background:#fff;color:#999;border:1px solid #ddd;border-radius:8px;font-weight:700;cursor:pointer;font-family:Arial;font-size:13px">♀ FEM.</button>
+          <button id="tsbO" onclick="setSexo('O')" style="flex:1;padding:10px;background:#fff;color:#999;border:1px solid #ddd;border-radius:8px;font-weight:700;cursor:pointer;font-family:Arial;font-size:13px">⊕ OTRO</button>
+        </div>
+
+        <div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:4px">NOMBRE DEL LLAMANTE</div>
+        <input id="pNomLlam" placeholder="¿Quién llama?" style="width:100%;background:#fff;border:1px solid #ddd;border-radius:8px;color:#111;font-size:15px;padding:10px 12px;outline:none;font-family:Arial;box-sizing:border-box;margin-bottom:8px"/>
+
+        <div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:4px">RELACIÓN CON EL PACIENTE</div>
+        <select id="pRelacion" style="width:100%;background:#fff;border:1px solid #ddd;border-radius:8px;color:#333;font-size:15px;padding:10px 12px;outline:none;font-family:Arial;box-sizing:border-box;margin-bottom:8px;-webkit-appearance:none">
+          <option value="">— Seleccionar —</option>
+          <option>Paciente mismo</option><option>Familiar</option><option>Vecino</option>
+          <option>Médico tratante</option><option>Personal de salud</option><option>Transeúnte</option><option>Otro</option>
+        </select>
+
+        <div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:4px">OBRA SOCIAL / PREPAGA</div>
+        <input id="pObr" placeholder="Ej: OSDE, PAMI, Particular" style="width:100%;background:#fff;border:1px solid #ddd;border-radius:8px;color:#111;font-size:15px;padding:10px 12px;outline:none;font-family:Arial;box-sizing:border-box;margin-bottom:8px"/>
+
+        <div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:4px">N° DE SOCIO / AFILIADO</div>
+        <input id="pNroSocio" placeholder="Nº afiliado" style="width:100%;background:#fff;border:1px solid #ddd;border-radius:8px;color:#111;font-size:15px;padding:10px 12px;outline:none;font-family:Arial;box-sizing:border-box;margin-bottom:8px"/>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="flex:1;font-size:14px;color:#333">¿Abona coseguro?</div>
+          <label class="toggle-sw"><input type="checkbox" id="pCoseguro" onchange="toggleCoseguro()"/><span class="toggle-sl"></span></label>
+        </div>
+        <div id="coseguroMonto" style="display:none;margin-bottom:8px">
+          <div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:4px">MONTO COSEGURO ($)</div>
+          <input id="pMontoCoseguro" placeholder="Ej: 2500" type="number" style="width:100%;background:#fff;border:1px solid #ddd;border-radius:8px;color:#111;font-size:15px;padding:10px 12px;outline:none;font-family:Arial;box-sizing:border-box"/>
+        </div>
+
+        <button onclick="abrirPickT()" style="width:100%;background:#e3f2fd;border:1px solid #00b4d8;color:#0077b6;font-weight:700;font-size:14px;padding:12px;cursor:pointer;border-radius:8px;font-family:Arial;margin-bottom:6px">📍 ELEGIR EN EL MAPA</button>
+        <button onclick="toggleDatosExtra()" style="width:100%;background:#fff;color:#666;border:1px solid #ddd;font-size:13px;padding:10px;cursor:pointer;border-radius:8px;font-family:Arial">▲ Ocultar datos opcionales</button>
       </div>
-      <div class="grid2">
-        <div>
-          <div class="flabel">ENTRE CALLE</div>
-          <input class="finp" id="pEntre1" placeholder="Entre..."/>
-        </div>
-        <div>
-          <div class="flabel">Y CALLE</div>
-          <input class="finp" id="pEntre2" placeholder="Y..."/>
-        </div>
-      </div>
-      <div class="flabel">PISO / DEPTO / REFERENCIA</div>
-      <input class="finp" id="pPisoDepto" placeholder="Ej: 4to B / Casa del fondo / Portería"/>
-      <div class="grid2">
-        <div>
-          <div class="flabel">LOCALIDAD</div>
-          <input class="finp" id="pLoc" placeholder="Ej: Palermo"/>
-        </div>
-        <div>
-          <div class="flabel">PROVINCIA</div>
-          <input class="finp" id="pProv" placeholder="Ej: CABA"/>
-        </div>
-      </div>
-      <button class="mbtn m-blue" onclick="abrirPickT()">📍 ELEGIR EN EL MAPA</button>
-      <div id="pPos" style="font-size:11px;color:#43aa8b;margin-bottom:10px;min-height:16px;font-family:monospace"></div>
-      <button class="mbtn m-red" onclick="crearAux()">🚨 CREAR AUXILIO</button>
+
     </div>
     <div class="tab" id="tabT1"><div id="misAuxList"><div class="empty">No creaste auxilios aún.</div></div></div>
   </div>
@@ -385,7 +391,7 @@ textarea.finp{resize:vertical;min-height:70px}
   <div class="panel-left" id="panelLeft">
     <div class="panel-header">
       <div class="panel-title" style="color:#ef233c">🚨 PENDIENTES <span id="bdP" style="background:#ef233c;color:#fff;padding:1px 5px;border-radius:8px;font-size:9px">0</span></div>
-      <button class="panel-toggle" onclick="togglePanelLeft()">☰</button>
+      <button class="panel-toggle" onclick="togglePanelLeft()" title="Cerrar panel">✕</button>
     </div>
     <div style="padding:6px 8px;border-bottom:1px solid #1e2d40;display:flex;flex-wrap:wrap;gap:4px">
       <button class="zona-btn" data-zona="todas" onclick="filtrarZona('todas')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #00b4d8;background:rgba(0,180,216,0.2);color:#00b4d8;cursor:pointer;font-family:monospace;letter-spacing:1px">🗺 TODAS</button>
@@ -398,12 +404,15 @@ textarea.finp{resize:vertical;min-height:70px}
   </div>
   <div class="panel-right" id="panelRight">
     <div class="panel-header">
-      <button class="panel-toggle" onclick="togglePanelRight()">☰</button>
+      <button class="panel-toggle" onclick="togglePanelRight()" title="Cerrar panel">✕</button>
       <div class="panel-title" style="color:#43aa8b">🚑 MÓVILES</div>
     </div>
     <div class="panel-body" id="movList"></div>
   </div>
   <button class="fab-act" onclick="toggleActivos()">⚡ ACTIVOS <span id="bdA" style="background:#ef233c;color:#fff;padding:1px 5px;border-radius:8px;font-size:9px;display:none">0</span></button>
+  <!-- Botones para reabrir paneles cuando están cerrados -->
+  <button id="btnAbrirPend" onclick="if(!panelLeftOpen)togglePanelLeft()" style="position:fixed;top:60px;left:4px;z-index:55;background:#ef233c;color:#fff;border:none;border-radius:0 8px 8px 0;padding:10px 8px;cursor:pointer;font-size:18px;display:none" title="Ver pendientes">🚨</button>
+  <button id="btnAbrirMov" onclick="if(!panelRightOpen)togglePanelRight()" style="position:fixed;top:60px;right:4px;z-index:55;background:#43aa8b;color:#fff;border:none;border-radius:8px 0 0 8px;padding:10px 8px;cursor:pointer;font-size:18px;display:none" title="Ver móviles">🚑</button>
   <div class="activos-bar" id="activosBar">
     <div class="activos-hdr">
       <div style="font-size:11px;color:#00b4d8;letter-spacing:2px;font-family:monospace">⚡ AUXILIOS ACTIVOS</div>
@@ -715,6 +724,30 @@ textarea.finp{resize:vertical;min-height:70px}
     <div style="display:flex;gap:10px;margin-top:10px">
       <button class="mbtn m-green" id="btnConfCierre" style="margin-bottom:0">✓ CONFIRMAR Y CERRAR AUXILIO</button>
       <button class="mbtn m-dim" onclick="cancelarCierre()" style="margin-bottom:0;width:auto;padding:13px 16px">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INTERRUMPIR AUXILIO -->
+<div class="overlay" id="interrumpirBox" style="z-index:690">
+  <div class="ov-box" style="border-color:#f9c74f;max-height:88vh;overflow-y:auto">
+    <div style="font-size:14px;font-weight:700;color:#f9c74f;letter-spacing:2px;margin-bottom:4px;font-family:monospace;text-align:center">⚠️ INTERRUMPIR AUXILIO</div>
+    <div id="intAuxInfo" style="background:#07090f;border-radius:8px;padding:10px;margin-bottom:14px;font-size:13px;color:#c9d6df;line-height:1.6"></div>
+    <div class="flabel">MOTIVO DE INTERRUPCIÓN</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px" id="intMotivoList">
+      <button class="int-mot" data-mot="Paciente no encontrado en domicilio" style="background:rgba(249,199,79,0.1);border:1px solid #f9c74f;border-radius:8px;padding:12px;text-align:left;cursor:pointer;color:#c9d6df;font-family:Arial;font-size:14px">🚪 Paciente no encontrado en domicilio</button>
+      <button class="int-mot" data-mot="Acceso imposible / zona intransitable" style="background:rgba(249,199,79,0.1);border:1px solid #f9c74f;border-radius:8px;padding:12px;text-align:left;cursor:pointer;color:#c9d6df;font-family:Arial;font-size:14px">🚧 Acceso imposible / zona intransitable</button>
+      <button class="int-mot" data-mot="Paciente trasladado por otro medio" style="background:rgba(249,199,79,0.1);border:1px solid #f9c74f;border-radius:8px;padding:12px;text-align:left;cursor:pointer;color:#c9d6df;font-family:Arial;font-size:14px">🚗 Paciente trasladado por otro medio</button>
+      <button class="int-mot" data-mot="Auxilio cancelado por solicitante" style="background:rgba(249,199,79,0.1);border:1px solid #f9c74f;border-radius:8px;padding:12px;text-align:left;cursor:pointer;color:#c9d6df;font-family:Arial;font-size:14px">📞 Cancelado por el solicitante</button>
+      <button class="int-mot" data-mot="Falla mecánica de la unidad" style="background:rgba(249,199,79,0.1);border:1px solid #f9c74f;border-radius:8px;padding:12px;text-align:left;cursor:pointer;color:#c9d6df;font-family:Arial;font-size:14px">🔧 Falla mecánica de la unidad</button>
+      <button class="int-mot" data-mot="Zona de riesgo / inseguridad" style="background:rgba(249,199,79,0.1);border:1px solid #f9c74f;border-radius:8px;padding:12px;text-align:left;cursor:pointer;color:#c9d6df;font-family:Arial;font-size:14px">🔴 Zona de riesgo / inseguridad</button>
+      <button class="int-mot" data-mot="Otro motivo" style="background:rgba(249,199,79,0.1);border:1px solid #f9c74f;border-radius:8px;padding:12px;text-align:left;cursor:pointer;color:#c9d6df;font-family:Arial;font-size:14px">💬 Otro motivo</button>
+    </div>
+    <div class="flabel">DETALLE ADICIONAL (opcional)</div>
+    <textarea id="intDetalle" style="width:100%;background:#07090f;border:1px solid #1e2d40;border-radius:8px;color:#c9d6df;font-size:14px;padding:10px;outline:none;resize:none;min-height:50px;margin-bottom:12px;font-family:Arial" placeholder="Describí brevemente la situación..."></textarea>
+    <div style="display:flex;gap:10px">
+      <button class="mbtn" id="btnConfInt" style="background:rgba(249,199,79,0.2);color:#f9c74f;border:2px solid #f9c74f;margin-bottom:0">⚠️ CONFIRMAR INTERRUPCIÓN</button>
+      <button class="mbtn m-dim" onclick="document.getElementById('interrumpirBox').classList.remove('show')" style="margin-bottom:0;width:auto;padding:13px 16px">✕</button>
     </div>
   </div>
 </div>
@@ -1316,39 +1349,6 @@ function goTab(rol,idx){
 }
 
 // AUTOCOMPLETE DIRECCIÓN
-function buscarDir(val){
-  var box=document.getElementById('dirSugg'); if(!box) return;
-  if(val.length<4){box.style.display='none';return;}
-  clearTimeout(dirTimer);
-  dirTimer=setTimeout(async function(){
-    try{
-      var r=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(val)+'&limit=5&addressdetails=1&accept-language=es');
-      var data=await r.json();
-      if(!data.length){box.style.display='none';return;}
-      box.innerHTML='';
-      data.forEach(function(d){
-        var city=d.address.city||d.address.town||d.address.village||d.address.municipality||'';
-        var state=d.address.state||d.address.province||'';
-        var road=d.address.road||'';
-        var num=d.address.house_number||'';
-        var label=(road+(num?' '+num:''))+(city?', '+city:'')+(state?', '+state:'');
-        var item=document.createElement('div');
-        item.className='sugg-item';
-        item.textContent=label||d.display_name;
-        item.onclick=function(){
-          document.getElementById('pDir').value=road+(num?' '+num:'');
-          document.getElementById('pLoc').value=city;
-          document.getElementById('pProv').value=state;
-          tPickLat=parseFloat(d.lat);tPickLng=parseFloat(d.lon);
-          document.getElementById('pPos').textContent='📍 '+tPickLat.toFixed(5)+', '+tPickLng.toFixed(5);
-          box.style.display='none';
-        };
-        box.appendChild(item);
-      });
-      box.style.display='block';
-    }catch(e){}
-  },500);
-}
 
 // HOSPITAL SEARCH
 
@@ -1373,19 +1373,6 @@ function filtrarZona(zona){
 }
 
 // PRIORITY BUTTONS
-function setTPri(p){
-  tPriSelected=p;
-  var cfg={rojo:{bg:'rgba(239,35,60,0.15)',c:'#ef233c',bc:'#ef233c'},amarillo:{bg:'rgba(249,199,79,0.15)',c:'#f9c74f',bc:'#f9c74f'},verde:{bg:'rgba(67,170,139,0.15)',c:'#43aa8b',bc:'#43aa8b'}};
-  ['rojo','amarillo','verde'].forEach(function(x){
-    var id={rojo:'tpbr',amarillo:'tpba',verde:'tpbv'}[x];
-    var el=document.getElementById(id); if(!el) return;
-    var active=p===x;
-    el.style.background=active?cfg[x].bg:'transparent';
-    el.style.color=active?cfg[x].c:'#4a6a80';
-    el.style.border=active?'1px solid '+cfg[x].bc:'1px solid #1e2d40';
-  });
-  document.getElementById('tPriErr').textContent='';
-}
 
 // BUILD CARD
 function buildCard(a,showActions,showCmt){
@@ -1439,13 +1426,13 @@ function buildCard(a,showActions,showCmt){
     +'DNI: '+(a.dni||'—')+' · Edad: '+(a.eda||'—')+(a.sexo?' · '+a.sexo:'')+'<br>'
     +'Prioridad: <span style="color:'+priColor(a.pri)+'">'+(a.pri||'—').toUpperCase()+'</span>'
     +(a.movilN?' · 🚑 '+a.movilN:'')
-    +(a.despachador?' · Desp: '+a.despachador:'')
+    +((rolActual==='despacho'||rolActual==='supervisor')&&a.despachador?' · Desp: '+a.despachador:'')
     +(a.cierreDespacho?' · <span style="color:#f9c74f">IPH PENDIENTE</span>':'')
     +'</div>'
     +'<div class="c-sint">🩺 '+a.sin+'</div>'
-    +buildBit(a);
+    +((rolActual==='despacho'||rolActual==='supervisor')?buildBit(a):'');
 
-  if(showCmt&&rolActual!=='movil'){
+  if(showCmt&&(rolActual==='despacho'||rolActual==='supervisor')){
     html+='<div class="cmt-wrap"><input class="cmt-inp" id="cmt_'+a.fbKey+'" placeholder="Comentar..."/><button class="cmt-send" data-key="'+a.fbKey+'">ENVIAR</button></div>';
   }
   if(showActions&&!isBaja){
@@ -3468,6 +3455,255 @@ function renderMiAux(){
     initMapMovil(a);
   },100);
 }
+
+// ============================================================
+// TOGGLE DATOS EXTRAS EN FORMULARIO
+// ============================================================
+function toggleDatosExtra(){
+  var p2=document.getElementById('paso2');
+  var btn=document.getElementById('btnDatosExtra');
+  if(p2.style.display==='none'){
+    p2.style.display='block';
+    if(btn) btn.textContent='▲ Ocultar datos opcionales';
+  } else {
+    p2.style.display='none';
+    if(btn) btn.textContent='▼ Agregar datos del paciente (opcional)';
+  }
+}
+
+// ============================================================
+// PRIORIDAD — BOTONES CON COLORES MEJORADOS
+// ============================================================
+function setTPri(p){
+  tPriSelected=p;
+  var cfg={
+    rojo:{bg:'#ef233c',txt:'#fff',border:'#ef233c',inactive:'#fff',inactiveTxt:'#999',inactiveBorder:'#ddd'},
+    amarillo:{bg:'#f9c74f',txt:'#000',border:'#f9c74f',inactive:'#fff',inactiveTxt:'#999',inactiveBorder:'#ddd'},
+    verde:{bg:'#43aa8b',txt:'#fff',border:'#43aa8b',inactive:'#fff',inactiveTxt:'#999',inactiveBorder:'#ddd'}
+  };
+  ['rojo','amarillo','verde'].forEach(function(x){
+    var id={rojo:'tpbr',amarillo:'tpba',verde:'tpbv'}[x];
+    var el=document.getElementById(id); if(!el) return;
+    var active=p===x;
+    var c=cfg[x];
+    if(active){
+      el.style.background=c.bg;el.style.color=c.txt;
+      el.style.border='3px solid '+c.border;
+      el.style.boxShadow='0 3px 10px '+c.bg+'66';
+    } else {
+      el.style.background='#fff';el.style.color='#999';
+      el.style.border='2px solid #ddd';
+      el.style.boxShadow='none';
+    }
+  });
+  document.getElementById('tPriErr').textContent='';
+}
+
+// ============================================================
+// AUTOCOMPLETE DIRECCIÓN CON ENTRECALLES
+// ============================================================
+function buscarDir(val){
+  var box=document.getElementById('dirSugg'); if(!box) return;
+  if(val.length<4){box.style.display='none';return;}
+  clearTimeout(dirTimer);
+  dirTimer=setTimeout(async function(){
+    try{
+      var r=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(val)+'&limit=6&addressdetails=1&accept-language=es');
+      var data=await r.json();
+      if(!data.length){box.style.display='none';return;}
+      box.innerHTML='';
+      box.style.background='#fff';box.style.color='#111';
+      data.forEach(function(d){
+        var addr=d.address;
+        var road=addr.road||addr.pedestrian||addr.path||'';
+        var num=addr.house_number||'';
+        var city=addr.city||addr.town||addr.village||addr.municipality||addr.suburb||'';
+        var state=addr.state||addr.province||'';
+        var label=(road+(num?' '+num:''))+(city?', '+city:'')+(state?', '+state:'');
+        var item=document.createElement('div');
+        item.className='sugg-item';
+        item.style.cssText='padding:10px 12px;cursor:pointer;border-bottom:1px solid #eee;font-size:14px;color:#111;background:#fff';
+        item.textContent=label||d.display_name;
+        item.onmouseover=function(){item.style.background='#f5f5f5';};
+        item.onmouseout=function(){item.style.background='#fff';};
+        item.onclick=function(){
+          document.getElementById('pDir').value=road+(num?' '+num:'');
+          document.getElementById('pLoc').value=city;
+          document.getElementById('pProv').value=state;
+          tPickLat=parseFloat(d.lat);tPickLng=parseFloat(d.lon);
+          document.getElementById('pPos').textContent='📍 '+tPickLat.toFixed(5)+', '+tPickLng.toFixed(5);
+          box.style.display='none';
+          // Buscar entrecalles automáticamente
+          if(road&&num) buscarEntrecalles(road,num,city,state,parseFloat(d.lat),parseFloat(d.lon));
+        };
+        box.appendChild(item);
+      });
+      box.style.display='block';
+    }catch(e){}
+  },400);
+}
+
+async function buscarEntrecalles(road,num,city,state,lat,lng){
+  try{
+    // Buscar intersecciones cercanas usando Overpass API
+    var delta=0.003;
+    var bbox=(lat-delta)+','+(lng-delta)+','+(lat+delta)+','+(lng+delta);
+    var query='[out:json][timeout:10];way["highway"]["name"]('+bbox+');out tags geom;';
+    var r=await fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(query));
+    var data=await r.json();
+    if(!data.elements||!data.elements.length) return;
+    // Filtrar calles distintas a la actual
+    var calles=[];
+    data.elements.forEach(function(e){
+      var n=e.tags&&e.tags.name;
+      if(n&&n.toLowerCase()!==road.toLowerCase()&&calles.indexOf(n)<0) calles.push(n);
+    });
+    // Tomar las 2 más cercanas (primera y última de la lista filtrada)
+    if(calles.length>0) document.getElementById('pEntre1').value=calles[0];
+    if(calles.length>1) document.getElementById('pEntre2').value=calles[1];
+  }catch(e){
+    // Si falla Overpass, no pasa nada — las entrecalles quedan vacías
+  }
+}
+
+// ============================================================
+// PANEL VISIBILITY BUTTONS (despacho)
+// ============================================================
+var _togglePanelLeftOrig=togglePanelLeft;
+function togglePanelLeft(){
+  panelLeftOpen=!panelLeftOpen;
+  document.getElementById('panelLeft').style.transform=panelLeftOpen?'translateX(0)':'translateX(-200px)';
+  var btn=document.getElementById('btnAbrirPend');
+  if(btn) btn.style.display=panelLeftOpen?'none':'block';
+}
+var _togglePanelRightOrig=togglePanelRight;
+function togglePanelRight(){
+  panelRightOpen=!panelRightOpen;
+  document.getElementById('panelRight').style.transform=panelRightOpen?'translateX(0)':'translateX(140px)';
+  var btn=document.getElementById('btnAbrirMov');
+  if(btn) btn.style.display=panelRightOpen?'none':'block';
+}
+
+// ============================================================
+// INTERRUMPIR AUXILIO
+// ============================================================
+var intFbKey=null,intMovilId=null,intMotivo=null;
+
+function abrirInterrumpir(fbKey,movilId){
+  intFbKey=fbKey;intMovilId=movilId;intMotivo=null;
+  var a=auxilios[fbKey]; if(!a) return;
+  document.getElementById('intAuxInfo').innerHTML=
+    '<b style="color:#f9c74f">#'+a.num+' — '+a.nom+' '+a.ape+'</b><br>'
+    +'📍 '+a.dir+(a.loc?' · '+a.loc:'')+'<br>'
+    +'🩺 '+a.sin+'<br>'
+    +'<span style="color:'+priColor(a.pri)+'">'+a.pri.toUpperCase()+'</span>'
+    +(a.movilN?' · 🚑 '+a.movilN:'');
+  document.getElementById('intDetalle').value='';
+  // Reset botones
+  document.querySelectorAll('.int-mot').forEach(function(b){
+    b.style.background='rgba(249,199,79,0.1)';b.style.borderColor='#f9c74f';b.style.color='#c9d6df';
+    b.onclick=function(){
+      document.querySelectorAll('.int-mot').forEach(function(x){x.style.background='rgba(249,199,79,0.1)';x.style.color='#c9d6df';});
+      b.style.background='rgba(249,199,79,0.3)';b.style.color='#f9c74f';
+      intMotivo=b.dataset.mot;
+    };
+  });
+  document.getElementById('btnConfInt').onclick=confirmarInterrupcion;
+  document.getElementById('interrumpirBox').classList.add('show');
+}
+
+async function confirmarInterrupcion(){
+  if(!intFbKey||!intMotivo){alert('Seleccioná un motivo.');return;}
+  var detalle=document.getElementById('intDetalle').value.trim();
+  var motCompleto=intMotivo+(detalle?' — '+detalle:'');
+  if(db){
+    await db.ref('auxilios/'+intFbKey).update({
+      est:'interrumpido',tsInterrumpido:Date.now(),
+      motivoInterrupcion:motCompleto,interrumpidoPor:me.n
+    });
+    if(intMovilId){
+      await db.ref('moviles/'+intMovilId).update({est:'libre'});
+      // Notificar al móvil
+      await db.ref('auxilios/'+intFbKey).update({movilNotifInterrupcion:true});
+    }
+  }
+  addBit(intFbKey,'⚠️ AUXILIO INTERRUMPIDO por '+me.n+' — Motivo: '+motCompleto,'fin');
+  document.getElementById('interrumpirBox').classList.remove('show');
+  intFbKey=null;intMovilId=null;intMotivo=null;
+}
+
+// Agregar botón INTERRUMPIR en buildCard para despacho
+var _buildCardBase=buildCard;
+function buildCard(a,showActions,showCmt){
+  var div=_buildCardBase(a,showActions,showCmt);
+  if(!div||!showActions) return div;
+  // Agregar botón interrumpir si está activo
+  if((rolActual==='despacho'||rolActual==='supervisor')&&['activo','llegada','derivando','asignado'].indexOf(a.est)>=0){
+    var interBtn=document.createElement('button');
+    interBtn.className='pc-btn';
+    interBtn.style.cssText='background:rgba(249,199,79,0.15);color:#f9c74f;border:1px solid #f9c74f;margin-top:4px';
+    interBtn.textContent='⚠ INTERRUMPIR';
+    interBtn.onclick=function(){abrirInterrumpir(a.fbKey,a.movilId);};
+    var actDiv=div.querySelector('.pc-acts');
+    if(actDiv) actDiv.appendChild(interBtn);
+  }
+  return div;
+}
+
+// ============================================================
+// RECHAZO DE ROJO — CONFIRMACIÓN ESPECIAL
+// ============================================================
+var _rechazarAuxBase=rechazarAux;
+async function rechazarAux(motivo){
+  var a=alertaAuxId?auxilios[alertaAuxId]:null;
+  if(a&&a.pri==='rojo'){
+    // Mostrar confirmación especial para rojos
+    var conf=confirm('⚠️ ATENCIÓN\n\nEstás rechazando un auxilio ROJO (URGENTE).\n\nMotivo seleccionado: '+motivo+'\n\n¿Confirmás el rechazo?');
+    if(!conf) return;
+  }
+  await _rechazarAuxBase(motivo);
+}
+
+// Notificación al móvil cuando su auxilio es interrumpido
+var _checkAuxOrig=checkAuxMovil;
+function checkAuxMovil(){
+  _checkAuxOrig();
+  if(!me||rolActual!=='movil') return;
+  auxArr().forEach(function(a){
+    if(a.movilId===me.mid&&a.est==='interrumpido'&&a.movilNotifInterrupcion&&!auxAlertado['int_'+a.fbKey]){
+      auxAlertado['int_'+a.fbKey]=true;
+      if(db) db.ref('auxilios/'+a.fbKey).update({movilNotifInterrupcion:false});
+      // Mostrar alerta al móvil
+      var n=document.createElement('div');
+      n.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(249,199,79,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center';
+      n.innerHTML='<div style="font-size:60px;margin-bottom:16px">⚠️</div>'
+        +'<div style="font-size:24px;font-weight:900;color:#000;margin-bottom:12px">AUXILIO INTERRUMPIDO</div>'
+        +'<div style="font-size:16px;color:#333;margin-bottom:8px">#'+a.num+' — '+a.nom+' '+a.ape+'</div>'
+        +'<div style="font-size:15px;color:#333;background:rgba(0,0,0,0.1);border-radius:8px;padding:12px;margin-bottom:20px">'+a.motivoInterrupcion+'</div>'
+        +'<div style="font-size:13px;color:#555;margin-bottom:20px">Interrumpido por: '+a.interrumpidoPor+'</div>'
+        +'<button onclick="this.parentElement.remove()" style="background:#000;color:#f9c74f;border:none;font-weight:700;font-size:16px;padding:14px 30px;border-radius:10px;cursor:pointer;font-family:Arial">✓ ENTENDIDO</button>';
+      document.body.appendChild(n);
+      iniciarAleraSonora();
+      setTimeout(detenerAlertaSonora,5000);
+    }
+  });
+}
+
+// Agregar estado 'interrumpido' al labelMap
+var _estLabelOrig=estLabel;
+function estLabel(e,r){
+  if(e==='interrumpido') return '⚠️ INTERRUMPIDO';
+  return _estLabelOrig(e,r);
+}
+
+// Agregar al event delegation el botón interrumpir en panel pendientes
+document.addEventListener('click',function(e){
+  if(e.target.classList.contains('btn-interrumpir')){
+    var key=e.target.dataset.key;
+    var mid=parseInt(e.target.dataset.mid)||null;
+    if(key) abrirInterrumpir(key,mid);
+  }
+});
 
 </script>
 </body>
