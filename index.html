@@ -510,7 +510,7 @@ textarea.finp{resize:vertical;min-height:70px}
     <div class="flabel">PARAMÉDICO / ENFERMERO/A</div><input class="finp" id="emEnfermero" placeholder="Nombre del paramédico"/>
     <div class="flabel">HORARIO DE GUARDIA</div><input class="finp" id="emGuardia" placeholder="Ej: 24/7 · Lun-Vie 08-20hs"/>
     <div style="display:flex;gap:10px;margin-top:8px">
-      <button class="mbtn m-green" onclick="guardarEditMovil()" style="margin-bottom:0">✓ GUARDAR</button>
+      <button class="mbtn m-green" id="btnConfEditMovil" onclick="guardarEditMovil()" style="margin-bottom:0">✓ GUARDAR</button>
       <button class="mbtn m-dim" onclick="document.getElementById('editMovilBox').classList.remove('show')" style="margin-bottom:0;width:auto;padding:13px 16px">✕</button>
     </div>
   </div>
@@ -1319,13 +1319,22 @@ function startListeners(){
 function onDataChange(){
   try{
     if(rolActual==='tomador') renderMisAux();
-    if(rolActual==='despacho'){renderPend();renderMov();if(activosOpen)renderActivos();updBadges();if(mapDesp)syncMapDesp();checkDerivAlert();}
+    if(rolActual==='despacho'){
+      renderPend();renderMov();
+      if(activosOpen)renderActivos();
+      updBadges();
+      if(mapDesp)syncMapDesp();
+      checkDerivAlert();
+    }
     if(rolActual==='movil'){
       checkAuxMovil();renderMiAux();renderHistM();renderIPHPend();renderProgList();
       var prog=auxArr().filter(function(a){return a.est==='programado'&&me&&a.movilId===me.mid;}).length;
       var bp=document.getElementById('bdProg');if(bp){bp.style.display=prog>0?'block':'none';bp.textContent=prog;}
     }
-    if(rolActual==='supervisor'){renderSupPend();renderSupAct();renderSupAll();updSupBadges();if(mapSup)syncMapSup();}
+    if(rolActual==='supervisor'){
+      renderSupPend();renderSupAct();renderSupAll();renderSupMov();updSupBadges();
+      if(mapSup)syncMapSup();
+    }
   }catch(err){console.error('onDataChange:',err.message);}
 }
 
@@ -2060,15 +2069,31 @@ function renderSupPend(){var el=document.getElementById('supPendList');if(!el)re
 function renderSupAct(){var el=document.getElementById('supActList');if(!el)return;var act=auxArr().filter(function(a){return ['asignado','activo','llegada','derivando','regresando'].indexOf(a.est)>=0;}).sort(function(a,b){return a.ts-b.ts;});el.innerHTML='';if(!act.length){el.innerHTML='<div class="empty">Sin activos.</div>';return;}act.forEach(function(a){el.appendChild(buildCard(a,true,true));});}
 function renderSupAll(){var el=document.getElementById('supAllList');if(!el)return;var all=auxArr().sort(function(a,b){return (b.ts||0)-(a.ts||0);});el.innerHTML='';if(!all.length){el.innerHTML='<div class="empty">Sin auxilios.</div>';return;}all.forEach(function(a){el.appendChild(buildCard(a,true,true));});}
 function renderSupMov(){
-  var el=document.getElementById('supMovList');if(!el)return;el.innerHTML='';
+  var el=document.getElementById('supMovList');if(!el)return;
+  // Botón agregar móvil nuevo
+  el.innerHTML='<button onclick="abrirNuevoMovil()" style="width:100%;background:rgba(67,170,139,0.15);border:2px solid #43aa8b;color:#43aa8b;font-weight:700;font-size:15px;padding:13px;cursor:pointer;border-radius:10px;font-family:Arial;margin-bottom:12px">➕ AGREGAR MÓVIL NUEVO</button>';
   movArr().forEach(function(u){
-    var c=u.noDisponible?'#555':colorEst(u.est);var div=document.createElement('div');
-    div.className='card';div.style.border='1px solid '+c;if(u.noDisponible)div.style.opacity='0.6';
-    div.innerHTML='<div class="c-r1"><span class="c-name">'+(u.n||'Móvil')+(u.num?' <span style="font-size:11px;color:#4a6a80;font-family:monospace">'+u.num+'</span>':'')+'</span><span style="font-size:10px;color:'+c+';font-family:monospace;font-weight:700">'+estLabel(u.est,u.regresandoDe)+'</span></div>'
-      +'<div class="c-meta">'+(u.medico?'👨‍⚕️ '+u.medico+' ':'')+(u.enfermero?'👩‍⚕️ '+u.enfermero+' ':'')+(u.tel?'📞 '+u.tel:'')+'<br>Guardia: '+(u.guardia||'24/7')+'</div>'
+    var c=u.noDisponible?'#555':colorEst(u.est);
+    var cond=u.estadoCond&&u.estadoCond!=='operativo';
+    var div=document.createElement('div');
+    div.className='card';div.style.border='1px solid '+(cond?'#ef233c':c);
+    if(u.noDisponible||cond)div.style.opacity='0.7';
+    div.innerHTML='<div class="c-r1"><span class="c-name">'+(u.n||'Móvil')+(u.num?' <span style="font-size:11px;color:#4a6a80;font-family:monospace">'+u.num+'</span>':'')+'</span>'
+      +'<span style="font-size:10px;color:'+(cond?'#ef233c':c)+';font-family:monospace;font-weight:700">'+(cond?'⛔ '+(u.estadoCondo||'NO OP.'):estLabel(u.est,u.regresandoDe))+'</span>'
+      +'</div>'
+      +'<div class="c-meta">'
+      +(u.medico?'👨‍⚕️ '+u.medico+' ':'')
+      +(u.enfermero?'· 👩‍⚕️ '+u.enfermero+' ':'')
+      +(u.tel?'<br>📞 '+u.tel:'')
+      +'<br>Guardia: '+(u.guardia||'24/7')
+      +'</div>'
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'
       +'<button class="pc-btn" onclick="abrirEditMovil('+u.id+')" style="background:rgba(0,180,216,0.15);color:#00b4d8;border:1px solid #00b4d8">✎ EDITAR</button>'
-      +(u.noDisponible?'<button class="pc-btn btn-disponible" data-mid="'+u.id+'" style="background:rgba(67,170,139,0.15);color:#43aa8b;border:1px solid #43aa8b">✓ DISPONIBLE</button>':'<button class="pc-btn btn-nodisponible" data-mid="'+u.id+'" style="background:rgba(100,100,100,0.15);color:#888;border:1px solid #555">⛔ NO DISP.</button>')
+      +'<button class="pc-btn" onclick="abrirCondicional('+u.id+')" style="background:rgba(249,199,79,0.15);color:#f9c74f;border:1px solid #f9c74f">⚙ ESTADO</button>'
+      +(u.noDisponible||cond
+        ?'<button class="pc-btn btn-disponible" data-mid="'+u.id+'" style="background:rgba(67,170,139,0.15);color:#43aa8b;border:1px solid #43aa8b">✓ OPERATIVO</button>'
+        :'<button class="pc-btn btn-nodisponible" data-mid="'+u.id+'" style="background:rgba(100,100,100,0.15);color:#888;border:1px solid #555">⛔ NO DISP.</button>')
+      +'<button class="pc-btn" onclick="eliminarMovil('+u.id+')" style="background:rgba(239,35,60,0.1);color:#ef233c;border:1px solid #ef233c">🗑 ELIMINAR</button>'
       +'</div>';
     el.appendChild(div);
   });
@@ -2084,7 +2109,17 @@ function updSupBadges(){
 // EDIT MOVIL
 function abrirEditMovil(movilId){
   var u=moviles[movilId];if(!u) return;
-  document.getElementById('emId').value=movilId;document.getElementById('emNombre').value=u.n||'';document.getElementById('emNum').value=u.num||'';document.getElementById('emTel').value=u.tel||'';document.getElementById('emMedico').value=u.medico||'';document.getElementById('emEnfermero').value=u.enfermero||'';document.getElementById('emGuardia').value=u.guardia||'24/7';
+  document.getElementById('emId').value=movilId;
+  document.getElementById('emNombre').value=u.n||'';
+  document.getElementById('emNum').value=u.num||'';
+  document.getElementById('emTel').value=u.tel||'';
+  document.getElementById('emMedico').value=u.medico||'';
+  document.getElementById('emEnfermero').value=u.enfermero||'';
+  document.getElementById('emGuardia').value=u.guardia||'24/7';
+  // Reset save button to edit mode
+  document.getElementById('btnConfEditMovil').onclick=guardarEditMovil;
+  var titulo=document.querySelector('#editMovilBox .ov-box div:first-child');
+  if(titulo) titulo.textContent='EDITAR MÓVIL';
   document.getElementById('editMovilBox').classList.add('show');
 }
 async function guardarEditMovil(){
@@ -2093,6 +2128,54 @@ async function guardarEditMovil(){
   if(!upd.n){alert('El nombre es obligatorio.');return;}
   if(db) await db.ref('moviles/'+id).update(upd);
   document.getElementById('editMovilBox').classList.remove('show');
+}
+
+function abrirNuevoMovil(){
+  // Calcular el próximo ID disponible
+  var ids=movArr().map(function(u){return u.id||0;});
+  var nextId=ids.length>0?Math.max.apply(null,ids)+1:1;
+  document.getElementById('emId').value=nextId;
+  document.getElementById('emNombre').value='Móvil '+nextId;
+  document.getElementById('emNum').value='UTI-'+String(nextId).padStart(3,'0');
+  document.getElementById('emTel').value='';
+  document.getElementById('emMedico').value='';
+  document.getElementById('emEnfermero').value='';
+  document.getElementById('emGuardia').value='24/7';
+  // Cambiar título del modal
+  var titulo=document.querySelector('#editMovilBox .ov-box div:first-child');
+  if(titulo) titulo.textContent='NUEVO MÓVIL';
+  document.getElementById('editMovilBox').classList.add('show');
+  // Al guardar, crear en Firebase con datos iniciales completos
+  document.getElementById('btnConfEditMovil').onclick=async function(){
+    var id=parseInt(document.getElementById('emId').value);
+    var n=document.getElementById('emNombre').value.trim();
+    if(!n){alert('El nombre es obligatorio.');return;}
+    var nuevoMovil={
+      id:id,
+      n:n,
+      num:document.getElementById('emNum').value.trim()||'UTI-'+String(id).padStart(3,'0'),
+      tel:document.getElementById('emTel').value.trim(),
+      medico:document.getElementById('emMedico').value.trim(),
+      enfermero:document.getElementById('emEnfermero').value.trim(),
+      guardia:document.getElementById('emGuardia').value.trim()||'24/7',
+      est:'libre',
+      lat:-34.6037+(Math.random()-0.5)*0.04,
+      lng:-58.3816+(Math.random()-0.5)*0.04,
+      noDisponible:false,
+      estadoCond:'operativo',
+      estadoCondo:'Operativo'
+    };
+    if(db) await db.ref('moviles/'+id).set(nuevoMovil);
+    document.getElementById('editMovilBox').classList.remove('show');
+    alert('✓ Móvil '+n+' creado correctamente.');
+  };
+}
+
+async function eliminarMovil(movilId){
+  var u=moviles[movilId]; if(!u) return;
+  if(!confirm('¿Eliminar '+u.n+'? Esta acción no se puede deshacer.')) return;
+  if(db) await db.ref('moviles/'+movilId).remove();
+  alert('Móvil eliminado.');
 }
 
 // BUSCADOR
