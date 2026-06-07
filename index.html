@@ -386,39 +386,42 @@ textarea.finp{resize:vertical;min-height:70px}
 
 <!-- APP DESPACHO -->
 <div class="page" id="pgDespacho">
-  <div class="topbar"><div class="t-logo">SEM <b>DESPACHO</b></div><div class="t-user" id="uDespacho"></div><div class="t-clock" id="clkD"></div><button class="t-out" onclick="doLogout()">SALIR</button></div>
-  <div style="position:fixed;top:52px;bottom:56px;left:0;right:0"><div id="mapDesp" style="width:100%;height:100%"></div></div>
-  <div class="panel-left" id="panelLeft">
-    <div class="panel-header">
-      <div class="panel-title" style="color:#ef233c">🚨 PENDIENTES <span id="bdP" style="background:#ef233c;color:#fff;padding:1px 5px;border-radius:8px;font-size:9px">0</span></div>
-      <button class="panel-toggle" onclick="togglePanelLeft()" title="Cerrar panel">✕</button>
-    </div>
-    <div style="padding:6px 8px;border-bottom:1px solid #1e2d40;display:flex;flex-wrap:wrap;gap:4px">
-      <button class="zona-btn" data-zona="todas" onclick="filtrarZona('todas')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #00b4d8;background:rgba(0,180,216,0.2);color:#00b4d8;cursor:pointer;font-family:monospace;letter-spacing:1px">🗺 TODAS</button>
-      <button class="zona-btn" data-zona="capital" onclick="filtrarZona('capital')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e2d40;background:transparent;color:#4a6a80;cursor:pointer;font-family:monospace;letter-spacing:1px">🏙 CAP</button>
-      <button class="zona-btn" data-zona="norte" onclick="filtrarZona('norte')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e2d40;background:transparent;color:#4a6a80;cursor:pointer;font-family:monospace;letter-spacing:1px">⬆ N</button>
-      <button class="zona-btn" data-zona="oeste" onclick="filtrarZona('oeste')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e2d40;background:transparent;color:#4a6a80;cursor:pointer;font-family:monospace;letter-spacing:1px">⬅ O</button>
-      <button class="zona-btn" data-zona="sur" onclick="filtrarZona('sur')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e2d40;background:transparent;color:#4a6a80;cursor:pointer;font-family:monospace;letter-spacing:1px">⬇ S</button>
-    </div>
-    <div class="panel-body" id="pendList"></div>
+  <div class="topbar">
+    <div class="t-logo">SEM <b>DESPACHO</b></div>
+    <div class="t-user" id="uDespacho"></div>
+    <div class="t-clock" id="clkD"></div>
+    <button class="t-out" onclick="doLogout()">SALIR</button>
   </div>
-  <div class="panel-right" id="panelRight">
-    <div class="panel-header">
-      <button class="panel-toggle" onclick="togglePanelRight()" title="Cerrar panel">✕</button>
-      <div class="panel-title" style="color:#43aa8b">🚑 MÓVILES</div>
-    </div>
-    <div class="panel-body" id="movList"></div>
+  <div class="tabnav">
+    <button class="tnb on" id="tnD0" onclick="goTabDesp(0)"><div class="tnb-ic">🗺️</div>MAPA</button>
+    <button class="tnb" id="tnD1" onclick="goTabDesp(1)"><div class="tnb-ic">🚨</div>PEND<span class="nbadge" id="bdP" style="display:none">0</span></button>
+    <button class="tnb" id="tnD2" onclick="goTabDesp(2)"><div class="tnb-ic">🚑</div>MÓVILES</button>
+    <button class="tnb" id="tnD3" onclick="goTabDesp(3)"><div class="tnb-ic">⚡</div>ACTIVOS<span class="nbadge" id="bdA" style="display:none">0</span></button>
   </div>
-  <button class="fab-act" onclick="toggleActivos()">⚡ ACTIVOS <span id="bdA" style="background:#ef233c;color:#fff;padding:1px 5px;border-radius:8px;font-size:9px;display:none">0</span></button>
-  <!-- Botones para reabrir paneles cuando están cerrados -->
-  <button id="btnAbrirPend" onclick="if(!panelLeftOpen)togglePanelLeft()" style="position:fixed;top:60px;left:4px;z-index:55;background:#ef233c;color:#fff;border:none;border-radius:0 8px 8px 0;padding:10px 8px;cursor:pointer;font-size:18px;display:none" title="Ver pendientes">🚨</button>
-  <button id="btnAbrirMov" onclick="if(!panelRightOpen)togglePanelRight()" style="position:fixed;top:60px;right:4px;z-index:55;background:#43aa8b;color:#fff;border:none;border-radius:8px 0 0 8px;padding:10px 8px;cursor:pointer;font-size:18px;display:none" title="Ver móviles">🚑</button>
-  <div class="activos-bar" id="activosBar">
-    <div class="activos-hdr">
-      <div style="font-size:11px;color:#00b4d8;letter-spacing:2px;font-family:monospace">⚡ AUXILIOS ACTIVOS</div>
-      <button onclick="toggleActivos()" style="background:none;border:none;color:#4a6a80;cursor:pointer;font-size:18px">✕</button>
+  <div class="content">
+    <!-- TAB 0: MAPA -->
+    <div class="tab-map on" id="tabD0">
+      <div id="mapDesp" style="width:100%;height:100%"></div>
     </div>
-    <div style="padding:10px" id="actList"></div>
+    <!-- TAB 1: PENDIENTES -->
+    <div class="tab" id="tabD1">
+      <div style="padding:8px;border-bottom:1px solid #1e2d40;display:flex;flex-wrap:wrap;gap:4px;background:#0d1117">
+        <button class="zona-btn" data-zona="todas" onclick="filtrarZona('todas')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #00b4d8;background:rgba(0,180,216,0.2);color:#00b4d8;cursor:pointer;font-family:monospace">🗺 TODAS</button>
+        <button class="zona-btn" data-zona="capital" onclick="filtrarZona('capital')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e2d40;background:transparent;color:#4a6a80;cursor:pointer;font-family:monospace">🏙 CAP</button>
+        <button class="zona-btn" data-zona="norte" onclick="filtrarZona('norte')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e2d40;background:transparent;color:#4a6a80;cursor:pointer;font-family:monospace">⬆ N</button>
+        <button class="zona-btn" data-zona="oeste" onclick="filtrarZona('oeste')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e2d40;background:transparent;color:#4a6a80;cursor:pointer;font-family:monospace">⬅ O</button>
+        <button class="zona-btn" data-zona="sur" onclick="filtrarZona('sur')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e2d40;background:transparent;color:#4a6a80;cursor:pointer;font-family:monospace">⬇ S</button>
+      </div>
+      <div id="pendList" style="padding:8px"></div>
+    </div>
+    <!-- TAB 2: MÓVILES -->
+    <div class="tab" id="tabD2">
+      <div id="movList" style="padding:8px"></div>
+    </div>
+    <!-- TAB 3: ACTIVOS -->
+    <div class="tab" id="tabD3">
+      <div id="actList" style="padding:8px"></div>
+    </div>
   </div>
 </div>
 
@@ -1291,7 +1294,7 @@ function doLogout(){
 }
 function iniciarApp(){
   if(rolActual==='tomador'){document.getElementById('uTomador').textContent=me.n;showPage('pgTomador');}
-  else if(rolActual==='despacho'){document.getElementById('uDespacho').textContent=me.n;showPage('pgDespacho');setTimeout(function(){initMapDesp();togglePanelLeft();togglePanelRight();},300);}
+  else if(rolActual==='despacho'){document.getElementById('uDespacho').textContent=me.n;showPage('pgDespacho');setTimeout(function(){initMapDesp();},300);}
   else if(rolActual==='movil'){document.getElementById('uMovil').textContent=me.n;showPage('pgMovil');setTimeout(initGPS,1000);}
   else if(rolActual==='supervisor'){
     document.getElementById('uSupervisor').textContent=me.n;
@@ -1338,10 +1341,16 @@ function onDataChange(){
   try{
     if(rolActual==='tomador') renderMisAux();
     if(rolActual==='despacho'){
-      renderPend();renderMov();
-      if(activosOpen)renderActivos();
+      // Update current visible tab
+      var activeD=document.querySelector('#pgDespacho .tab.on, #pgDespacho .tab-map.on');
+      if(activeD){
+        var did=activeD.id;
+        if(did==='tabD1') renderPend();
+        if(did==='tabD2') renderMov();
+        if(did==='tabD3') renderActivos();
+      }
       updBadges();
-      if(mapDesp)syncMapDesp();
+      if(mapDesp) syncMapDesp();
       checkDerivAlert();
     }
     if(rolActual==='movil'){
@@ -1696,6 +1705,7 @@ function renderActivos(){
 function updBadges(){
   var p=auxArr().filter(function(a){return a.est==='pendiente';}).length;
   var ac=auxArr().filter(function(a){return ['asignado','activo','llegada','derivando','regresando'].indexOf(a.est)>=0;}).length;
+  var bdP=document.getElementById('bdP');if(bdP){bdP.style.display=p>0?'inline':'none';bdP.textContent=p;}
   var bdA=document.getElementById('bdA');if(bdA){bdA.style.display=ac>0?'inline':'none';bdA.textContent=ac;}
 }
 
@@ -3668,11 +3678,21 @@ async function buscarEntrecalles(road,num,city,state,lat,lng){
 // ============================================================
 // PANEL VISIBILITY (despacho) — versión definitiva
 // ============================================================
-function togglePanelLeft(){
-  panelLeftOpen=!panelLeftOpen;
-  document.getElementById('panelLeft').style.transform=panelLeftOpen?'translateX(0)':'translateX(-250px)';
-  var btn=document.getElementById('btnAbrirPend');
-  if(btn) btn.style.display=panelLeftOpen?'none':'block';
+function goTabDesp(idx){
+  for(var i=0;i<4;i++){
+    var t=document.getElementById('tabD'+i);
+    var b=document.getElementById('tnD'+i);
+    if(t) t.className=i===0?'tab-map':'tab';
+    if(b) b.classList.remove('on');
+  }
+  var active=document.getElementById('tabD'+idx);
+  var activeBtn=document.getElementById('tnD'+idx);
+  if(active) active.className=idx===0?'tab-map on':'tab on';
+  if(activeBtn) activeBtn.classList.add('on');
+  if(idx===0) setTimeout(function(){if(mapDesp)mapDesp.invalidateSize();},100);
+  if(idx===1) renderPend();
+  if(idx===2) renderMov();
+  if(idx===3) renderActivos();
 }
 function togglePanelRight(){
   panelRightOpen=!panelRightOpen;
