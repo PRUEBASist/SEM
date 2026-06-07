@@ -1630,8 +1630,7 @@ function clearRoute(fbKey,tipo){
 }
 
 // PANELS
-function togglePanelLeft(){panelLeftOpen=!panelLeftOpen;document.getElementById('panelLeft').style.transform=panelLeftOpen?'translateX(0)':'translateX(-200px)';}
-function togglePanelRight(){panelRightOpen=!panelRightOpen;document.getElementById('panelRight').style.transform=panelRightOpen?'translateX(0)':'translateX(140px)';}
+// PANELS — manejados por versiones nuevas al final del script
 function toggleActivos(){activosOpen=!activosOpen;var el=document.getElementById('activosBar');el.style.display=activosOpen?'block':'none';if(activosOpen)renderActivos();}
 
 // RENDER PENDIENTES (panel despacho)
@@ -1810,16 +1809,6 @@ function checkDerivAlert(){
 }
 
 // CHECK NUEVO AUXILIO MOVIL
-function checkAuxMovil(){
-  if(!me||rolActual!=='movil') return;
-  auxArr().forEach(function(a){
-    if(a.movilId===me.mid&&a.est==='asignado'&&!a.movilNotif&&!auxAlertado[a.fbKey]){
-      auxAlertado[a.fbKey]=true;
-      if(db) db.ref('auxilios/'+a.fbKey).update({movilNotif:true});
-      mostrarAlertaMovil(a.fbKey,a);
-    }
-  });
-}
 function mostrarAlertaMovil(fbKey,a){
   alertaAuxId=fbKey;
   // ALERTA SONORA
@@ -3567,16 +3556,14 @@ async function buscarEntrecalles(road,num,city,state,lat,lng){
 }
 
 // ============================================================
-// PANEL VISIBILITY BUTTONS (despacho)
+// PANEL VISIBILITY (despacho) — versión definitiva
 // ============================================================
-var _togglePanelLeftOrig=togglePanelLeft;
 function togglePanelLeft(){
   panelLeftOpen=!panelLeftOpen;
   document.getElementById('panelLeft').style.transform=panelLeftOpen?'translateX(0)':'translateX(-200px)';
   var btn=document.getElementById('btnAbrirPend');
   if(btn) btn.style.display=panelLeftOpen?'none':'block';
 }
-var _togglePanelRightOrig=togglePanelRight;
 function togglePanelRight(){
   panelRightOpen=!panelRightOpen;
   document.getElementById('panelRight').style.transform=panelRightOpen?'translateX(0)':'translateX(140px)';
