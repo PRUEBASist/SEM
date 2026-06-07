@@ -455,7 +455,12 @@ textarea.finp{resize:vertical;min-height:70px}
     <div class="tab" id="tabS1"><div id="supPendList"><div class="empty">Sin pendientes.</div></div></div>
     <div class="tab" id="tabS2"><div id="supActList"><div class="empty">Sin activos.</div></div></div>
     <div class="tab" id="tabS3"><div id="supAllList"><div class="empty">Sin auxilios.</div></div></div>
-    <div class="tab" id="tabS4"><div id="supMovList"></div></div>
+    <div class="tab" id="tabS4">
+      <div style="padding:10px">
+        <button onclick="abrirNuevoMovil()" style="width:100%;background:rgba(67,170,139,0.15);border:2px solid #43aa8b;color:#43aa8b;font-weight:700;font-size:15px;padding:13px;cursor:pointer;border-radius:10px;font-family:Arial;margin-bottom:10px">➕ AGREGAR MÓVIL NUEVO</button>
+      </div>
+      <div id="supMovList" style="padding:0 10px 10px"></div>
+    </div>
     <div class="tab" id="tabS5">
       <div style="padding:12px">
         <div class="stitle">BUSCAR AUXILIOS</div>
@@ -1288,13 +1293,26 @@ function iniciarApp(){
   if(rolActual==='tomador'){document.getElementById('uTomador').textContent=me.n;showPage('pgTomador');}
   else if(rolActual==='despacho'){document.getElementById('uDespacho').textContent=me.n;showPage('pgDespacho');setTimeout(function(){initMapDesp();togglePanelLeft();togglePanelRight();},300);}
   else if(rolActual==='movil'){document.getElementById('uMovil').textContent=me.n;showPage('pgMovil');setTimeout(initGPS,1000);}
-  else if(rolActual==='supervisor'){document.getElementById('uSupervisor').textContent=me.n;showPage('pgSupervisor');setTimeout(initMapSup,300);}
+  else if(rolActual==='supervisor'){
+    document.getElementById('uSupervisor').textContent=me.n;
+    showPage('pgSupervisor');
+    setTimeout(function(){
+      initMapSup();
+      // Force render moviles after Firebase data arrives
+      setTimeout(function(){renderSupMov();},1500);
+    },300);
+  }
   startListeners();
 }
 
 // FIREBASE LISTENERS
 function startListeners(){
   if(!db) return;
+  // Pre-cargar móviles desde definición local para que aparezcan de inmediato
+  if(Object.keys(moviles).length===0){
+    MOVILES_DEF.forEach(function(m){moviles[m.id]=Object.assign({},m);});
+    onDataChange();
+  }
   db.ref('auxilios').on('value',function(snap){auxilios=snap.val()||{};onDataChange();});
   db.ref('moviles').on('value',function(snap){
     var data=snap.val();
@@ -1649,12 +1667,15 @@ function renderMov(){
   el.innerHTML='';
   movArr().forEach(function(u){
     var cond=u.estadoCond&&u.estadoCond!=='operativo';
-    var c=cond?'#ef233c':colorEst(u.est);
+    var clr=cond?'#ef233c':colorEst(u.est);
     var div=document.createElement('div');
-    div.className='mov-card';div.style.border='1px solid '+c;
+    div.className='mov-card';div.style.border='1px solid '+clr;
     if(cond) div.style.opacity='0.75';
-    div.innerHTML='<div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px">'+(u.n||'Móvil')+(u.num?' <span style="font-size:9px;color:#4a6a80">'+u.num+'</span>':'')+'</div>'
-      +(cond?'<div style="font-size:10px;color:#ef233c;font-family:monospace;font-weight:700;margin-bottom:3px">⛔ '+(u.estadoCondo||'No operativo')+'</div>':'<div style="font-size:9px;color:'+c+';font-family:monospace;font-weight:700;margin-bottom:3px">'+estLabel(u.est,u.regresandoDe)+'</div>')
+    div.innerHTML=
+      '<div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px">'+(u.n||'Móvil')+(u.num?' <span style="font-size:9px;color:#4a6a80">'+u.num+'</span>':'')+'</div>'
+      +(cond
+        ?'<div style="font-size:10px;color:#ef233c;font-family:monospace;font-weight:700;margin-bottom:3px">⛔ '+(u.estadoCondo||'No operativo')+'</div>'
+        :'<div style="font-size:9px;color:'+clr+';font-family:monospace;font-weight:700;margin-bottom:3px">'+estLabel(u.est,u.regresandoDe)+'</div>')
       +(u.medico?'<div style="font-size:9px;color:#4a6a80;font-family:monospace">👨‍⚕️ '+u.medico+'</div>':'')
       +(u.enfermero?'<div style="font-size:9px;color:#4a6a80;font-family:monospace">👩‍⚕️ '+u.enfermero+'</div>':'')
       +(u.tel?'<div style="font-size:9px;color:#4a6a80;font-family:monospace">📞 '+u.tel+'</div>':'')
@@ -2070,16 +2091,22 @@ function renderSupAct(){var el=document.getElementById('supActList');if(!el)retu
 function renderSupAll(){var el=document.getElementById('supAllList');if(!el)return;var all=auxArr().sort(function(a,b){return (b.ts||0)-(a.ts||0);});el.innerHTML='';if(!all.length){el.innerHTML='<div class="empty">Sin auxilios.</div>';return;}all.forEach(function(a){el.appendChild(buildCard(a,true,true));});}
 function renderSupMov(){
   var el=document.getElementById('supMovList');if(!el)return;
-  // Botón agregar móvil nuevo
-  el.innerHTML='<button onclick="abrirNuevoMovil()" style="width:100%;background:rgba(67,170,139,0.15);border:2px solid #43aa8b;color:#43aa8b;font-weight:700;font-size:15px;padding:13px;cursor:pointer;border-radius:10px;font-family:Arial;margin-bottom:12px">➕ AGREGAR MÓVIL NUEVO</button>';
+  el.innerHTML='';
+  if(!movArr().length){
+    el.innerHTML='<div class="empty">Sin móviles configurados.</div>';
+    return;
+  }
   movArr().forEach(function(u){
-    var c=u.noDisponible?'#555':colorEst(u.est);
+    var clr=u.noDisponible?'#555':colorEst(u.est);
     var cond=u.estadoCond&&u.estadoCond!=='operativo';
     var div=document.createElement('div');
-    div.className='card';div.style.border='1px solid '+(cond?'#ef233c':c);
-    if(u.noDisponible||cond)div.style.opacity='0.7';
-    div.innerHTML='<div class="c-r1"><span class="c-name">'+(u.n||'Móvil')+(u.num?' <span style="font-size:11px;color:#4a6a80;font-family:monospace">'+u.num+'</span>':'')+'</span>'
-      +'<span style="font-size:10px;color:'+(cond?'#ef233c':c)+';font-family:monospace;font-weight:700">'+(cond?'⛔ '+(u.estadoCondo||'NO OP.'):estLabel(u.est,u.regresandoDe))+'</span>'
+    div.className='card';
+    div.style.border='1px solid '+(cond?'#ef233c':clr);
+    if(u.noDisponible||cond) div.style.opacity='0.7';
+    div.innerHTML=
+      '<div class="c-r1">'
+      +'<span class="c-name">'+(u.n||'Móvil')+(u.num?' <span style="font-size:11px;color:#4a6a80;font-family:monospace">'+u.num+'</span>':'')+'</span>'
+      +'<span style="font-size:10px;color:'+(cond?'#ef233c':clr)+';font-family:monospace;font-weight:700">'+(cond?'⛔ '+(u.estadoCondo||'NO OP.'):estLabel(u.est,u.regresandoDe))+'</span>'
       +'</div>'
       +'<div class="c-meta">'
       +(u.medico?'👨‍⚕️ '+u.medico+' ':'')
@@ -2093,7 +2120,7 @@ function renderSupMov(){
       +(u.noDisponible||cond
         ?'<button class="pc-btn btn-disponible" data-mid="'+u.id+'" style="background:rgba(67,170,139,0.15);color:#43aa8b;border:1px solid #43aa8b">✓ OPERATIVO</button>'
         :'<button class="pc-btn btn-nodisponible" data-mid="'+u.id+'" style="background:rgba(100,100,100,0.15);color:#888;border:1px solid #555">⛔ NO DISP.</button>')
-      +'<button class="pc-btn" onclick="eliminarMovil('+u.id+')" style="background:rgba(239,35,60,0.1);color:#ef233c;border:1px solid #ef233c">🗑 ELIMINAR</button>'
+      +'<button class="pc-btn" onclick="eliminarMovil('+u.id+')" style="background:rgba(239,35,60,0.1);color:#ef233c;border:1px solid #ef233c">🗑</button>'
       +'</div>';
     el.appendChild(div);
   });
