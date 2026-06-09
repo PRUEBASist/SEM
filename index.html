@@ -234,14 +234,16 @@ textarea.finp{resize:vertical;min-height:70px}
 ::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:2px}
 ::-webkit-scrollbar-thumb:hover{background:#334155}
 
-/* === PANEL (legacy, kept for compat) === */
-.panel-left,.panel-right{display:none}
-.panel-body{overflow-y:auto;flex:1;padding:8px}
+/* === PANEL (despacho) === */
+.panel-left{position:fixed;top:52px;left:0;bottom:0;width:240px;background:rgba(10,14,26,0.98);border-right:2px solid #1e3a5f;z-index:1000;display:flex;flex-direction:column;transform:translateX(-200px);transition:transform 0.3s}
+.panel-right{position:fixed;top:52px;right:0;bottom:0;width:185px;background:rgba(10,14,26,0.98);border-left:2px solid #1e3a5f;z-index:1000;display:flex;flex-direction:column;transform:translateX(145px);transition:transform 0.3s}
 .panel-header{padding:8px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e3a5f;flex-shrink:0}
 .panel-title{font-size:10px;letter-spacing:2px;font-family:monospace}
-.panel-toggle{background:none;border:none;color:#475569;cursor:pointer;font-size:16px;padding:2px 6px}
-.activos-bar{display:none}
-.fab-act{display:none}
+.panel-toggle{background:none;border:none;color:#475569;cursor:pointer;font-size:16px;padding:4px 8px;font-size:18px}
+.panel-body{overflow-y:auto;flex:1;padding:8px}
+.activos-bar{position:fixed;bottom:0;left:0;right:0;z-index:999;background:rgba(10,14,26,0.98);border-top:2px solid #38bdf8;display:none;max-height:65vh;overflow-y:auto}
+.activos-hdr{padding:10px 14px;border-bottom:1px solid #1e3a5f;display:flex;justify-content:space-between;align-items:center}
+.fab-act{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:998;background:rgba(10,14,26,0.95);border:2px solid #1e3a5f;color:#e2e8f0;font-family:inherit;font-weight:700;font-size:12px;padding:8px 18px;cursor:pointer;border-radius:20px;letter-spacing:1px}
 
 /* === TRIAGE === */
 .triage-opt{width:100%;background:rgba(30,58,95,0.3);border:1px solid #1e3a5f;border-radius:12px;padding:14px;text-align:left;cursor:pointer;color:#e2e8f0;font-size:15px;font-family:inherit;line-height:1.4;transition:all 0.2s;margin-bottom:0}
@@ -439,42 +441,41 @@ textarea.finp{resize:vertical;min-height:70px}
 
 <!-- APP DESPACHO -->
 <div class="page" id="pgDespacho">
-  <div class="topbar">
-    <div class="t-logo">SEM <b>DESPACHO</b></div>
-    <div class="t-user" id="uDespacho"></div>
-    <div class="t-clock" id="clkD"></div>
-    <button class="t-out" onclick="doLogout()">SALIR</button>
+  <div class="topbar"><div class="t-logo">SEM <b>DESPACHO</b></div><div class="t-user" id="uDespacho"></div><div class="t-clock" id="clkD"></div><button class="t-out" onclick="doLogout()">SALIR</button></div>
+  <!-- MAP FULLSCREEN -->
+  <div style="position:fixed;top:52px;bottom:0;left:0;right:0"><div id="mapDesp" style="width:100%;height:100%"></div></div>
+  <!-- PANEL LEFT: pendientes -->
+  <div class="panel-left" id="panelLeft">
+    <div class="panel-header">
+      <div class="panel-title" style="color:#f43f5e">🚨 PENDIENTES <span id="bdP" style="background:#f43f5e;color:#fff;padding:1px 5px;border-radius:8px;font-size:9px">0</span></div>
+      <button class="panel-toggle" onclick="togglePanelLeft()">☰</button>
+    </div>
+    <div style="padding:6px 8px;border-bottom:1px solid #1e3a5f;display:flex;flex-wrap:wrap;gap:4px">
+      <button class="zona-btn" data-zona="todas" onclick="filtrarZona('todas')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #38bdf8;background:rgba(56,189,248,0.2);color:#38bdf8;cursor:pointer;font-family:monospace;letter-spacing:1px">🗺 TODAS</button>
+      <button class="zona-btn" data-zona="capital" onclick="filtrarZona('capital')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e3a5f;background:transparent;color:#475569;cursor:pointer;font-family:monospace;letter-spacing:1px">🏙 CAP</button>
+      <button class="zona-btn" data-zona="norte" onclick="filtrarZona('norte')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e3a5f;background:transparent;color:#475569;cursor:pointer;font-family:monospace;letter-spacing:1px">⬆ N</button>
+      <button class="zona-btn" data-zona="oeste" onclick="filtrarZona('oeste')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e3a5f;background:transparent;color:#475569;cursor:pointer;font-family:monospace;letter-spacing:1px">⬅ O</button>
+      <button class="zona-btn" data-zona="sur" onclick="filtrarZona('sur')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e3a5f;background:transparent;color:#475569;cursor:pointer;font-family:monospace;letter-spacing:1px">⬇ S</button>
+    </div>
+    <div class="panel-body" id="pendList"></div>
   </div>
-  <div class="tabnav">
-    <button class="tnb on" id="tnD0" onclick="goTabDesp(0)"><div class="tnb-ic">🗺️</div>MAPA</button>
-    <button class="tnb" id="tnD1" onclick="goTabDesp(1)"><div class="tnb-ic">🚨</div>PEND<span class="nbadge" id="bdP" style="display:none">0</span></button>
-    <button class="tnb" id="tnD2" onclick="goTabDesp(2)"><div class="tnb-ic">🚑</div>MÓVILES</button>
-    <button class="tnb" id="tnD3" onclick="goTabDesp(3)"><div class="tnb-ic">⚡</div>ACTIVOS<span class="nbadge" id="bdA" style="display:none">0</span></button>
+  <!-- PANEL RIGHT: moviles -->
+  <div class="panel-right" id="panelRight">
+    <div class="panel-header">
+      <button class="panel-toggle" onclick="togglePanelRight()">☰</button>
+      <div class="panel-title" style="color:#34d399">🚑 MÓVILES</div>
+    </div>
+    <div class="panel-body" id="movList"></div>
   </div>
-  <div class="content">
-    <!-- TAB 0: MAPA -->
-    <div class="tab-map on" id="tabD0">
-      <div id="mapDesp" style="width:100%;height:100%"></div>
+  <!-- FAB ACTIVOS -->
+  <button class="fab-act" onclick="toggleActivos()">⚡ ACTIVOS <span id="bdA" style="background:#f43f5e;color:#fff;padding:1px 5px;border-radius:8px;font-size:9px;display:none">0</span></button>
+  <!-- ACTIVOS PANEL -->
+  <div class="activos-bar" id="activosBar">
+    <div class="activos-hdr">
+      <div style="font-size:11px;color:#38bdf8;letter-spacing:2px;font-family:monospace">⚡ AUXILIOS ACTIVOS</div>
+      <button onclick="toggleActivos()" style="background:none;border:none;color:#475569;cursor:pointer;font-size:18px">✕</button>
     </div>
-    <!-- TAB 1: PENDIENTES -->
-    <div class="tab" id="tabD1">
-      <div style="padding:8px;border-bottom:1px solid #1e2d40;display:flex;flex-wrap:wrap;gap:4px;background:#0d1117">
-        <button class="zona-btn" data-zona="todas" onclick="filtrarZona('todas')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #00b4d8;background:rgba(0,180,216,0.2);color:#00b4d8;cursor:pointer;font-family:monospace">🗺 TODAS</button>
-        <button class="zona-btn" data-zona="capital" onclick="filtrarZona('capital')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e2d40;background:transparent;color:#4a6a80;cursor:pointer;font-family:monospace">🏙 CAP</button>
-        <button class="zona-btn" data-zona="norte" onclick="filtrarZona('norte')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e2d40;background:transparent;color:#4a6a80;cursor:pointer;font-family:monospace">⬆ N</button>
-        <button class="zona-btn" data-zona="oeste" onclick="filtrarZona('oeste')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e2d40;background:transparent;color:#4a6a80;cursor:pointer;font-family:monospace">⬅ O</button>
-        <button class="zona-btn" data-zona="sur" onclick="filtrarZona('sur')" style="font-size:9px;padding:3px 7px;border-radius:4px;border:1px solid #1e2d40;background:transparent;color:#4a6a80;cursor:pointer;font-family:monospace">⬇ S</button>
-      </div>
-      <div id="pendList" style="padding:8px"></div>
-    </div>
-    <!-- TAB 2: MÓVILES -->
-    <div class="tab" id="tabD2">
-      <div id="movList" style="padding:8px"></div>
-    </div>
-    <!-- TAB 3: ACTIVOS -->
-    <div class="tab" id="tabD3">
-      <div id="actList" style="padding:8px"></div>
-    </div>
+    <div style="padding:10px" id="actList"></div>
   </div>
 </div>
 
@@ -1352,9 +1353,8 @@ function iniciarApp(){
     showPage('pgDespacho');
     setTimeout(function(){
       initMapDesp();
-      renderMov();
-      renderPend();
-      updBadges();
+      togglePanelLeft();
+      togglePanelRight();
     },300);
   }
   else if(rolActual==='movil'){document.getElementById('uMovil').textContent=me.n;showPage('pgMovil');setTimeout(initGPS,1000);}
@@ -1726,7 +1726,7 @@ function clearRoute(fbKey,tipo){
 }
 
 // PANELS
-// PANELS — manejados por versiones nuevas al final del script
+function togglePanelLeft(){panelLeftOpen=!panelLeftOpen;document.getElementById('panelLeft').style.transform=panelLeftOpen?'translateX(0)':'translateX(-200px)';}
 function toggleActivos(){activosOpen=!activosOpen;var el=document.getElementById('activosBar');el.style.display=activosOpen?'block':'none';if(activosOpen)renderActivos();}
 
 // RENDER PENDIENTES (panel despacho)
@@ -3756,9 +3756,7 @@ function goTabDesp(idx){
 }
 function togglePanelRight(){
   panelRightOpen=!panelRightOpen;
-  document.getElementById('panelRight').style.transform=panelRightOpen?'translateX(0)':'translateX(200px)';
-  var btn=document.getElementById('btnAbrirMov');
-  if(btn) btn.style.display=panelRightOpen?'none':'block';
+  document.getElementById('panelRight').style.transform=panelRightOpen?'translateX(0)':'translateX(145px)';
 }
 
 // ============================================================
