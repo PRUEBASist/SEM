@@ -444,6 +444,9 @@ textarea.finp{resize:vertical;min-height:70px}
   <div class="topbar"><div class="t-logo">SEM <b>DESPACHO</b></div><div class="t-user" id="uDespacho"></div><div class="t-clock" id="clkD"></div><button class="t-out" onclick="doLogout()">SALIR</button></div>
   <!-- MAP FULLSCREEN -->
   <div style="position:fixed;top:52px;bottom:0;left:0;right:0"><div id="mapDesp" style="width:100%;height:100%"></div></div>
+  <!-- TOGGLE MAPA OSCURO/CLARO -->
+  <button id="btnMapTema" onclick="toggleMapTema()" style="position:fixed;top:58px;left:50%;transform:translateX(-50%);z-index:1001;background:rgba(10,14,26,0.9);border:1px solid #1e3a5f;color:#e2e8f0;font-size:11px;padding:5px 12px;cursor:pointer;border-radius:0 0 8px 8px;font-family:monospace;letter-spacing:1px">🌙 OSCURO</button>
+
   <!-- PANEL LEFT: pendientes -->
   <div class="panel-left" id="panelLeft">
     <div class="panel-header">
@@ -605,13 +608,24 @@ textarea.finp{resize:vertical;min-height:70px}
 <!-- EDIT MOVIL MODAL -->
 <div class="overlay" id="editMovilBox" style="z-index:700">
   <div class="ov-box" style="border-color:#00b4d8">
-    <div style="font-size:14px;font-weight:700;color:#00b4d8;letter-spacing:2px;margin-bottom:16px;font-family:monospace">EDITAR MÓVIL</div>
+    <div style="font-size:14px;font-weight:700;color:#38bdf8;letter-spacing:2px;margin-bottom:16px;font-family:monospace" id="editMovilTitulo">EDITAR MÓVIL</div>
     <input type="hidden" id="emId"/>
     <div class="flabel">NOMBRE DEL MÓVIL</div><input class="finp" id="emNombre" placeholder="Ej: Móvil 1"/>
     <div class="flabel">NÚMERO DE UNIDAD</div><input class="finp" id="emNum" placeholder="Ej: UTI-001"/>
     <div class="flabel">TELÉFONO DEL MÓVIL</div><input class="finp" id="emTel" placeholder="Ej: 11-1234-5678" type="tel"/>
-    <div class="flabel">MÉDICO</div><input class="finp" id="emMedico" placeholder="Nombre del médico"/>
-    <div class="flabel">PARAMÉDICO / ENFERMERO/A</div><input class="finp" id="emEnfermero" placeholder="Nombre del paramédico"/>
+    <div class="flabel">MÉDICO / MÉDICA</div><input class="finp" id="emMedico" placeholder="Dr/a. Nombre Apellido"/>
+    <div class="flabel">PARAMÉDICO/A</div><input class="finp" id="emParamedico" placeholder="Nombre del paramédico"/>
+    <div class="flabel">ENFERMERO/A (opcional)</div><input class="finp" id="emEnfermero" placeholder="Nombre del enfermero/a"/>
+    <div class="flabel">ZONA DE COBERTURA</div>
+    <select class="finp" id="emZona">
+      <option value="">— Seleccionar zona —</option>
+      <option>CABA</option>
+      <option>GBA Norte</option>
+      <option>GBA Oeste</option>
+      <option>GBA Sur</option>
+      <option>Toda el área</option>
+      <option>Personalizada</option>
+    </select>
     <div class="flabel">HORARIO DE GUARDIA</div><input class="finp" id="emGuardia" placeholder="Ej: 24/7 · Lun-Vie 08-20hs"/>
     <div style="display:flex;gap:10px;margin-top:8px">
       <button class="mbtn m-green" id="btnConfEditMovil" onclick="guardarEditMovil()" style="margin-bottom:0">✓ GUARDAR</button>
@@ -1101,6 +1115,22 @@ function verificarMaster(){
   if(val===MASTER){document.getElementById('pgMaster').classList.remove('show');document.getElementById('pgLogin').classList.add('show');}
   else{document.getElementById('masterErr').textContent='Contraseña incorrecta';document.getElementById('masterPass').value='';}
 }
+// Auto-restore session on load
+window.addEventListener('load',function(){
+  try{
+    var raw=localStorage.getItem('sem_session');
+    if(raw){
+      var s=JSON.parse(raw);
+      if(Date.now()-s.ts < 12*60*60*1000){
+        me=s.me; rolActual=s.rolActual;
+        document.getElementById('pgMaster').classList.remove('show');
+        iniciarApp();
+        return;
+      }
+    }
+  }catch(e){}
+  // No session — show master screen normally
+});
 
 var USERS = {
   'recepcion1':{p:'1234',r:'tomador',n:'Recepción 1'},
@@ -1381,6 +1411,7 @@ function doLogin(){
   iniciarApp();
 }
 function doLogout(){
+  try{ localStorage.removeItem('sem_session'); }catch(e){}
   stopGPS();
   if(db){db.ref('auxilios').off();db.ref('moviles').off();}
   me=null;rolActual=null;
@@ -1389,6 +1420,7 @@ function doLogout(){
   showPage('pgLogin');
 }
 function iniciarApp(){
+  guardarSesion();
   if(rolActual==='tomador'){document.getElementById('uTomador').textContent=me.n;showPage('pgTomador');}
   else if(rolActual==='despacho'){
     document.getElementById('uDespacho').textContent=me.n;
@@ -1728,7 +1760,12 @@ function mkIncIcon(pri){
 function initMapDesp(){
   if(mapDesp) return;
   mapDesp=L.map('mapDesp',{zoomControl:false,attributionControl:false}).setView([-34.6037,-58.3816],13);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapDesp);
+  var temaGuardado=localStorage.getItem('sem_mapTema')||'claro';
+  mapTemaOscuro=(temaGuardado==='oscuro');
+  var url=mapTemaOscuro?TILE_OSCURO:TILE_CLARO;
+  tileLayerDesp=L.tileLayer(url,{maxZoom:19}).addTo(mapDesp);
+  var btn=document.getElementById('btnMapTema');
+  if(btn) btn.textContent=mapTemaOscuro?'☀️ CLARO':'🌙 OSCURO';
   syncMapDesp();
 }
 function syncMapDesp(){
@@ -2227,7 +2264,10 @@ async function sendGPS(lat,lng){if(!me||!db) return;await db.ref('moviles/'+me.m
 function initMapSup(){
   if(mapSup) return;
   mapSup=L.map('mapSup',{zoomControl:false,attributionControl:false}).setView([-34.6037,-58.3816],13);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapSup);
+  var temaGuardado=localStorage.getItem('sem_mapTema')||'claro';
+  mapTemaOscuro=(temaGuardado==='oscuro');
+  var url=mapTemaOscuro?TILE_OSCURO:TILE_CLARO;
+  tileLayerSup=L.tileLayer(url,{maxZoom:19}).addTo(mapSup);
   syncMapSup();
 }
 function syncMapSup(){
@@ -2298,39 +2338,52 @@ function updSupBadges(){
 // EDIT MOVIL
 function abrirEditMovil(movilId){
   var u=moviles[movilId];if(!u) return;
+  var titulo=document.getElementById('editMovilTitulo');
+  if(titulo) titulo.textContent='EDITAR MÓVIL — '+(u.n||'Móvil '+movilId);
   document.getElementById('emId').value=movilId;
   document.getElementById('emNombre').value=u.n||'';
   document.getElementById('emNum').value=u.num||'';
   document.getElementById('emTel').value=u.tel||'';
   document.getElementById('emMedico').value=u.medico||'';
+  document.getElementById('emParamedico').value=u.paramedico||'';
   document.getElementById('emEnfermero').value=u.enfermero||'';
+  document.getElementById('emZona').value=u.zona||'';
   document.getElementById('emGuardia').value=u.guardia||'24/7';
-  // Reset save button to edit mode
   document.getElementById('btnConfEditMovil').onclick=guardarEditMovil;
-  var titulo=document.querySelector('#editMovilBox .ov-box div:first-child');
-  if(titulo) titulo.textContent='EDITAR MÓVIL';
   document.getElementById('editMovilBox').classList.add('show');
 }
 async function guardarEditMovil(){
   var id=parseInt(document.getElementById('emId').value);
-  var upd={n:document.getElementById('emNombre').value.trim(),num:document.getElementById('emNum').value.trim(),tel:document.getElementById('emTel').value.trim(),medico:document.getElementById('emMedico').value.trim(),enfermero:document.getElementById('emEnfermero').value.trim(),guardia:document.getElementById('emGuardia').value.trim()||'24/7'};
+  var upd={
+    n:document.getElementById('emNombre').value.trim(),
+    num:document.getElementById('emNum').value.trim(),
+    tel:document.getElementById('emTel').value.trim(),
+    medico:document.getElementById('emMedico').value.trim(),
+    paramedico:document.getElementById('emParamedico').value.trim()||null,
+    enfermero:document.getElementById('emEnfermero').value.trim()||null,
+    zona:document.getElementById('emZona').value||null,
+    guardia:document.getElementById('emGuardia').value.trim()||'24/7'
+  };
   if(!upd.n){alert('El nombre es obligatorio.');return;}
   if(db) await db.ref('moviles/'+id).update(upd);
   document.getElementById('editMovilBox').classList.remove('show');
 }
 
+
 function abrirNuevoMovil(){
-  // Calcular el próximo ID disponible
   var ids=movArr().map(function(u){return u.id||0;});
   var nextId=ids.length>0?Math.max.apply(null,ids)+1:1;
+  var titulo=document.getElementById('editMovilTitulo');
+  if(titulo) titulo.textContent='NUEVO MÓVIL';
   document.getElementById('emId').value=nextId;
   document.getElementById('emNombre').value='Móvil '+nextId;
   document.getElementById('emNum').value='UTI-'+String(nextId).padStart(3,'0');
   document.getElementById('emTel').value='';
   document.getElementById('emMedico').value='';
+  document.getElementById('emParamedico').value='';
   document.getElementById('emEnfermero').value='';
+  document.getElementById('emZona').value='';
   document.getElementById('emGuardia').value='24/7';
-  // Cambiar título del modal
   var titulo=document.querySelector('#editMovilBox .ov-box div:first-child');
   if(titulo) titulo.textContent='NUEVO MÓVIL';
   document.getElementById('editMovilBox').classList.add('show');
@@ -4046,6 +4099,49 @@ document.addEventListener('click',function(e){
     if(key) abrirInterrumpir(key,mid);
   }
 });
+
+
+// ============================================================
+// SESIÓN PERSISTENTE — localStorage
+// ============================================================
+function guardarSesion(){
+  if(!me||!rolActual) return;
+  try{ localStorage.setItem('sem_session', JSON.stringify({me:me,rolActual:rolActual,ts:Date.now()})); }catch(e){}
+}
+function cargarSesion(){
+  try{
+    var raw=localStorage.getItem('sem_session');
+    if(!raw) return false;
+    var s=JSON.parse(raw);
+    // Sesión válida por 12 horas
+    if(Date.now()-s.ts > 12*60*60*1000){ localStorage.removeItem('sem_session'); return false; }
+    me=s.me; rolActual=s.rolActual;
+    return true;
+  }catch(e){ return false; }
+}
+function cerrarSesion(){
+  try{ localStorage.removeItem('sem_session'); }catch(e){}
+  doLogout();
+}
+
+// ============================================================
+// TOGGLE MAPA OSCURO/CLARO
+// ============================================================
+var mapTemaOscuro = false;
+var TILE_CLARO  = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+var TILE_OSCURO = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+var tileLayerDesp = null;
+var tileLayerSup  = null;
+
+function toggleMapTema(){
+  mapTemaOscuro = !mapTemaOscuro;
+  var url = mapTemaOscuro ? TILE_OSCURO : TILE_CLARO;
+  var btn = document.getElementById('btnMapTema');
+  if(btn) btn.textContent = mapTemaOscuro ? '☀️ CLARO' : '🌙 OSCURO';
+  if(mapDesp && tileLayerDesp){ mapDesp.removeLayer(tileLayerDesp); tileLayerDesp = L.tileLayer(url,{maxZoom:19}).addTo(mapDesp); }
+  if(mapSup  && tileLayerSup ){ mapSup.removeLayer(tileLayerSup);   tileLayerSup  = L.tileLayer(url,{maxZoom:19}).addTo(mapSup);  }
+  try{ localStorage.setItem('sem_mapTema', mapTemaOscuro?'oscuro':'claro'); }catch(e){}
+}
 
 </script>
 </body>
