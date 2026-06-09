@@ -1347,15 +1347,25 @@ function doLogout(){
 }
 function iniciarApp(){
   if(rolActual==='tomador'){document.getElementById('uTomador').textContent=me.n;showPage('pgTomador');}
-  else if(rolActual==='despacho'){document.getElementById('uDespacho').textContent=me.n;showPage('pgDespacho');setTimeout(function(){initMapDesp();},300);}
+  else if(rolActual==='despacho'){
+    document.getElementById('uDespacho').textContent=me.n;
+    showPage('pgDespacho');
+    setTimeout(function(){
+      initMapDesp();
+      renderMov();
+      renderPend();
+      updBadges();
+    },300);
+  }
   else if(rolActual==='movil'){document.getElementById('uMovil').textContent=me.n;showPage('pgMovil');setTimeout(initGPS,1000);}
   else if(rolActual==='supervisor'){
     document.getElementById('uSupervisor').textContent=me.n;
     showPage('pgSupervisor');
     setTimeout(function(){
       initMapSup();
-      // Force render moviles after Firebase data arrives
-      setTimeout(function(){renderSupMov();},1500);
+      renderSupMov();
+      renderSupPend();
+      updSupBadges();
     },300);
   }
   startListeners();
@@ -1394,17 +1404,14 @@ function onDataChange(){
   try{
     if(rolActual==='tomador') renderMisAux();
     if(rolActual==='despacho'){
-      // Update current visible tab
-      var activeD=document.querySelector('#pgDespacho .tab.on, #pgDespacho .tab-map.on');
-      if(activeD){
-        var did=activeD.id;
-        if(did==='tabD1') renderPend();
-        if(did==='tabD2') renderMov();
-        if(did==='tabD3') renderActivos();
-      }
+      renderPend();
+      renderMov();
       updBadges();
       if(mapDesp) syncMapDesp();
       checkDerivAlert();
+      // Update activos if that tab is active
+      var activeD=document.getElementById('tabD3');
+      if(activeD&&activeD.classList.contains('on')) renderActivos();
     }
     if(rolActual==='movil'){
       checkAuxMovil();renderMiAux();renderHistM();renderIPHPend();renderProgList();
