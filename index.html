@@ -1351,22 +1351,26 @@ function iniciarApp(){
   else if(rolActual==='despacho'){
     document.getElementById('uDespacho').textContent=me.n;
     showPage('pgDespacho');
+    startListeners();
     setTimeout(function(){
       initMapDesp();
       togglePanelLeft();
       togglePanelRight();
-    },300);
+    },800);
+    return;
   }
   else if(rolActual==='movil'){document.getElementById('uMovil').textContent=me.n;showPage('pgMovil');setTimeout(initGPS,1000);}
   else if(rolActual==='supervisor'){
     document.getElementById('uSupervisor').textContent=me.n;
     showPage('pgSupervisor');
+    startListeners();
     setTimeout(function(){
       initMapSup();
       renderSupMov();
       renderSupPend();
       updSupBadges();
-    },300);
+    },800);
+    return;
   }
   startListeners();
 }
@@ -1726,8 +1730,16 @@ function clearRoute(fbKey,tipo){
 }
 
 // PANELS
-function togglePanelLeft(){panelLeftOpen=!panelLeftOpen;document.getElementById('panelLeft').style.transform=panelLeftOpen?'translateX(0)':'translateX(-200px)';}
-function toggleActivos(){activosOpen=!activosOpen;var el=document.getElementById('activosBar');el.style.display=activosOpen?'block':'none';if(activosOpen)renderActivos();}
+function togglePanelLeft(){
+  panelLeftOpen=!panelLeftOpen;
+  document.getElementById('panelLeft').style.transform=panelLeftOpen?'translateX(0)':'translateX(-200px)';
+  if(panelLeftOpen) renderPend();
+}
+function togglePanelRight(){
+  panelRightOpen=!panelRightOpen;
+  document.getElementById('panelRight').style.transform=panelRightOpen?'translateX(0)':'translateX(145px)';
+  if(panelRightOpen) renderMov();
+}function toggleActivos(){activosOpen=!activosOpen;var el=document.getElementById('activosBar');el.style.display=activosOpen?'block':'none';if(activosOpen)renderActivos();}
 
 // RENDER PENDIENTES (panel despacho)
 // RENDER MOVILES (panel despacho)
@@ -3754,11 +3766,6 @@ function goTabDesp(idx){
   if(idx===2) renderMov();
   if(idx===3) renderActivos();
 }
-function togglePanelRight(){
-  panelRightOpen=!panelRightOpen;
-  document.getElementById('panelRight').style.transform=panelRightOpen?'translateX(0)':'translateX(145px)';
-}
-
 // ============================================================
 // INTERRUMPIR AUXILIO
 // ============================================================
