@@ -535,6 +535,48 @@ textarea.finp{resize:vertical;min-height:70px}
   </div>
 </div>
 
+<!-- INICIO DE GUARDIA MOVIL -->
+<div class="overlay" id="inicioGuardiaBox" style="z-index:900">
+  <div class="ov-box" style="border-color:#34d399;max-height:92vh;overflow-y:auto">
+    <div style="text-align:center;font-size:40px;margin-bottom:8px">🚑</div>
+    <div style="font-size:15px;font-weight:700;color:#34d399;letter-spacing:2px;margin-bottom:4px;font-family:monospace;text-align:center">INICIO DE GUARDIA</div>
+    <div id="igMovilNombre" style="font-size:13px;color:#475569;text-align:center;margin-bottom:20px;font-family:monospace"></div>
+
+    <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="font-size:10px;color:#475569;letter-spacing:2px;font-family:monospace;margin-bottom:8px">TRIPULACIÓN ASIGNADA</div>
+      <div id="igTripulacion" style="font-size:14px;color:#e2e8f0;line-height:2">Cargando...</div>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:#34d399;letter-spacing:2px;font-family:monospace;margin-bottom:10px;text-align:center">✍️ FIRMA DIGITAL DE INGRESO</div>
+    <div style="font-size:11px;color:#475569;font-family:monospace;margin-bottom:10px;text-align:center">Firmá para confirmar que sos vos y comenzar la guardia</div>
+
+    <div class="flabel">TU NOMBRE COMPLETO</div>
+    <input class="finp" id="igFirmaNombre" placeholder="Nombre y apellido completo"/>
+
+    <div class="flabel">TU ROL</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <button id="igRolMed" onclick="setIgRol('medico')" style="flex:1;padding:10px;background:rgba(244,63,94,0.15);color:#f43f5e;border:2px solid #f43f5e;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">👨‍⚕️ MÉDICO</button>
+      <button id="igRolPar" onclick="setIgRol('paramedico')" style="flex:1;padding:10px;background:transparent;color:#475569;border:1px solid #1e3a5f;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">🩺 PARAMÉDICO</button>
+      <button id="igRolEnf" onclick="setIgRol('enfermero')" style="flex:1;padding:10px;background:transparent;color:#475569;border:1px solid #1e3a5f;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">💉 ENFERMERO</button>
+    </div>
+
+    <div class="flabel">PIN PERSONAL (4 dígitos) — intransferible</div>
+    <div style="position:relative;margin-bottom:10px">
+      <input class="finp" id="igPin" type="password" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="••••" style="margin-bottom:0;letter-spacing:8px;font-size:20px;text-align:center"/>
+    </div>
+    <div style="font-size:10px;color:#475569;font-family:monospace;margin-bottom:14px;text-align:center">Tu PIN queda guardado asociado a tu nombre — nadie más puede firmar por vos</div>
+
+    <div class="flabel">FIRMA TÁCTIL</div>
+    <div style="background:#fff;border-radius:10px;margin-bottom:6px;overflow:hidden;touch-action:none">
+      <canvas id="igFirmaCanvas" width="340" height="120" style="width:100%;height:120px;display:block;cursor:crosshair"></canvas>
+    </div>
+    <button onclick="limpiarIgFirma()" style="background:transparent;border:1px solid #1e3a5f;color:#475569;font-size:11px;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:monospace;margin-bottom:14px">✕ Limpiar firma</button>
+
+    <button class="mbtn m-green" onclick="confirmarInicioGuardia()">✅ FIRMAR Y COMENZAR GUARDIA</button>
+    <button class="mbtn m-dim" onclick="omitirInicioGuardia()" style="font-size:12px">Omitir firma — ingresar sin firmar</button>
+  </div>
+</div>
+
 <!-- ALERTA MOVIL -->
 <div class="overlay" id="alertaBox">
   <div class="ov-box">
@@ -1359,7 +1401,34 @@ function iniciarApp(){
     },800);
     return;
   }
-  else if(rolActual==='movil'){document.getElementById('uMovil').textContent=me.n;showPage('pgMovil');setTimeout(initGPS,1000);}
+  else if(rolActual==='movil'){
+    document.getElementById('uMovil').textContent=me.n;
+    showPage('pgMovil');
+    startListeners();
+    // Mostrar modal de inicio de guardia
+    setTimeout(function(){
+      var u=moviles[me.mid];
+      var igNom=document.getElementById('igMovilNombre');
+      if(igNom) igNom.textContent=(u&&u.n?u.n:'Móvil '+me.mid)+' · '+me.n;
+      // Mostrar tripulación asignada por supervisor
+      var trip=document.getElementById('igTripulacion');
+      if(trip){
+        var lineas=[];
+        if(u&&u.medico) lineas.push('👨‍⚕️ Dr/a. '+u.medico);
+        if(u&&u.paramedico) lineas.push('🩺 '+u.paramedico);
+        if(u&&u.enfermero) lineas.push('💉 '+u.enfermero);
+        if(u&&u.num) lineas.push('🚑 Unidad: '+u.num);
+        if(u&&u.tel) lineas.push('📞 '+u.tel);
+        if(u&&u.zona) lineas.push('📍 Zona: '+u.zona);
+        trip.innerHTML=lineas.length?lineas.join('<br>'):'<span style="color:#475569">Sin tripulación asignada — el supervisor debe configurarla</span>';
+      }
+      setIgRol('medico');
+      document.getElementById('inicioGuardiaBox').classList.add('show');
+      // Inicializar canvas de firma
+      setTimeout(initIgFirmaCanvas, 100);
+    },500);
+    return;
+  }
   else if(rolActual==='supervisor'){
     document.getElementById('uSupervisor').textContent=me.n;
     showPage('pgSupervisor');
@@ -1378,15 +1447,20 @@ function iniciarApp(){
 // FIREBASE LISTENERS
 function startListeners(){
   if(!db) return;
-  // Pre-cargar móviles desde definición local para que aparezcan de inmediato
-  if(Object.keys(moviles).length===0){
-    MOVILES_DEF.forEach(function(m){moviles[m.id]=Object.assign({},m);});
-    onDataChange();
-  }
+  // SIEMPRE pre-cargar móviles de MOVILES_DEF para que aparezcan de inmediato
+  MOVILES_DEF.forEach(function(m){
+    if(!moviles[m.id]) moviles[m.id]=Object.assign({},m);
+  });
+  onDataChange();
+  // Luego sincronizar con Firebase
   db.ref('auxilios').on('value',function(snap){auxilios=snap.val()||{};onDataChange();});
   db.ref('moviles').on('value',function(snap){
     var data=snap.val();
     if(data){
+      // Merge — Firebase tiene prioridad pero mantenemos los de MOVILES_DEF si no están
+      MOVILES_DEF.forEach(function(m){
+        if(!data[m.id]) data[m.id]=Object.assign({},m);
+      });
       moviles=data;
       Object.keys(moviles).forEach(function(id){
         var u=moviles[id]; if(!u) return;
@@ -1394,12 +1468,18 @@ function startListeners(){
         if(u.noDisponible===undefined) u.noDisponible=false;
         if(!u.guardia) u.guardia='24/7';
         if(!u.medico) u.medico=u.op||'';
-        if(!u.lat) u.lat=-34.6037;if(!u.lng) u.lng=-58.3816;
+        if(!u.lat) u.lat=-34.6037;
+        if(!u.lng) u.lng=-58.3816;
         if(!u.est) u.est='libre';
+        u.id=parseInt(id);
       });
     } else {
+      // No hay móviles en Firebase — crear desde MOVILES_DEF
       moviles={};
-      MOVILES_DEF.forEach(function(m){moviles[m.id]=m;db.ref('moviles/'+m.id).set(m);});
+      MOVILES_DEF.forEach(function(m){
+        moviles[m.id]=Object.assign({},m);
+        db.ref('moviles/'+m.id).set(m);
+      });
     }
     onDataChange();
   });
@@ -2758,6 +2838,86 @@ async function finalizarProgramado(fbKey){
 
 
 // Badge programados — integrado en onDataChange principal
+
+// ============================================================
+// INICIO DE GUARDIA — MÓVIL (solo firma digital)
+// ============================================================
+var igRolSel='medico',igFirmaCtx=null,igFirmaDrawing=false;
+
+function setIgRol(rol){
+  igRolSel=rol;
+  var cfg={
+    medico:{id:'igRolMed',bg:'rgba(244,63,94,0.15)',c:'#f43f5e',bc:'#f43f5e'},
+    paramedico:{id:'igRolPar',bg:'rgba(56,189,248,0.15)',c:'#38bdf8',bc:'#38bdf8'},
+    enfermero:{id:'igRolEnf',bg:'rgba(52,211,153,0.15)',c:'#34d399',bc:'#34d399'}
+  };
+  ['medico','paramedico','enfermero'].forEach(function(r){
+    var el=document.getElementById(cfg[r].id); if(!el) return;
+    var active=r===rol;
+    el.style.background=active?cfg[r].bg:'transparent';
+    el.style.color=active?cfg[r].c:'#475569';
+    el.style.border=active?'2px solid '+cfg[r].bc:'1px solid #1e3a5f';
+  });
+}
+
+function initIgFirmaCanvas(){
+  var canvas=document.getElementById('igFirmaCanvas'); if(!canvas) return;
+  igFirmaCtx=canvas.getContext('2d');
+  igFirmaCtx.strokeStyle='#111';igFirmaCtx.lineWidth=2.5;igFirmaCtx.lineCap='round';
+  function getPos(e){
+    var r=canvas.getBoundingClientRect();
+    var touch=e.touches?e.touches[0]:e;
+    return{x:(touch.clientX-r.left)*(canvas.width/r.width),y:(touch.clientY-r.top)*(canvas.height/r.height)};
+  }
+  canvas.addEventListener('mousedown',function(e){igFirmaDrawing=true;var p=getPos(e);igFirmaCtx.beginPath();igFirmaCtx.moveTo(p.x,p.y);});
+  canvas.addEventListener('mousemove',function(e){if(!igFirmaDrawing)return;var p=getPos(e);igFirmaCtx.lineTo(p.x,p.y);igFirmaCtx.stroke();});
+  canvas.addEventListener('mouseup',function(){igFirmaDrawing=false;});
+  canvas.addEventListener('touchstart',function(e){e.preventDefault();igFirmaDrawing=true;var p=getPos(e);igFirmaCtx.beginPath();igFirmaCtx.moveTo(p.x,p.y);},{passive:false});
+  canvas.addEventListener('touchmove',function(e){e.preventDefault();if(!igFirmaDrawing)return;var p=getPos(e);igFirmaCtx.lineTo(p.x,p.y);igFirmaCtx.stroke();},{passive:false});
+  canvas.addEventListener('touchend',function(){igFirmaDrawing=false;});
+}
+
+function limpiarIgFirma(){
+  var c=document.getElementById('igFirmaCanvas');
+  if(c&&igFirmaCtx) igFirmaCtx.clearRect(0,0,c.width,c.height);
+}
+
+async function confirmarInicioGuardia(){
+  var nombre=document.getElementById('igFirmaNombre').value.trim();
+  var pin=document.getElementById('igPin').value.trim();
+  if(!nombre){alert('Ingresá tu nombre completo.');return;}
+  if(!pin||pin.length<4){alert('El PIN debe tener 4 dígitos.');return;}
+  var canvas=document.getElementById('igFirmaCanvas');
+  var firmaImg=canvas?canvas.toDataURL('image/png'):'';
+  var firma={
+    nombre:nombre,rol:igRolSel,
+    firmaImg:firmaImg,
+    ts:Date.now(),
+    pinHash:btoa(pin+'_sem_'+nombre),
+    movilId:me.mid
+  };
+  var upd={
+    est:'libre',noDisponible:false,
+    estadoCond:'operativo',estadoCondo:'Operativo',
+    tsInicioGuardia:Date.now(),
+    operadoPor:nombre,
+    ultimoLogin:Date.now(),
+    firmaIngreso:firma
+  };
+  // Agregar al campo correcto según rol
+  if(igRolSel==='medico') upd.medico=nombre;
+  else if(igRolSel==='paramedico') upd.paramedico=nombre;
+  else if(igRolSel==='enfermero') upd.enfermero=nombre;
+  if(db) await db.ref('moviles/'+me.mid).update(upd);
+  document.getElementById('inicioGuardiaBox').classList.remove('show');
+  initGPS(); startGPS();
+}
+
+function omitirInicioGuardia(){
+  document.getElementById('inicioGuardiaBox').classList.remove('show');
+  if(db) db.ref('moviles/'+me.mid).update({ultimoLogin:Date.now(),est:'libre',noDisponible:false});
+  initGPS(); startGPS();
+}
 
 // ============================================================
 // TRIAGE GUIADO — Protocolo MPDS / ESI
